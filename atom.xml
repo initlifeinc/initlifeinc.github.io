@@ -4,7 +4,7 @@
   <title><![CDATA[Initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-03-05T01:58:16+08:00</updated>
+  <updated>2015-03-05T02:22:53+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[Initlife]]></name>
@@ -12,5 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Git使用及github]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/03/05/gitshi-yong-ji-github/"/>
+    <updated>2015-03-05T02:06:36+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/03/05/gitshi-yong-ji-github</id>
+    <content type="html"><![CDATA[<h1>hahaha</h1>
+]]></content>
+  </entry>
   
 </feed>
