@@ -9,7 +9,7 @@
   <meta name="author" content="initlife">
 
   
-  <meta name="description" content="About Mar 6th, 2015 10:04 am About Me Mar 6th, 2015 10:04 am Recent Posts Git及github使用，github多账号免登 Git使用及github GitHub Repos Status updating... @ &hellip;">
+  <meta name="description" content="About Mar 6th, 2015 10:04 am About Me Mar 6th, 2015 10:04 am Comments Please enable JavaScript to view the comments powered by Disqus. Recent Posts &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -58,6 +58,7 @@
 <ul class="main-navigation">
   <li><a href="/">首页</a></li>
   <li><a href="/blog/archives">文章列表</a></li>
+  <li><a href="/about">关于</a></li> 
 </ul>
 
 </nav>
@@ -101,6 +102,12 @@
     </footer>
   
 </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
 
@@ -153,7 +160,12 @@
 
 
 
-
+<section>
+  <h1>Categories</h1>
+  <ul id="categories">
+    {% category_list %} 
+  </ul>
+</section>
   
 </aside>
 
@@ -167,6 +179,22 @@
 
 </footer>
   
+
+<script type="text/javascript">
+      var disqus_shortname = 'initllifeinc';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://initlifeinc.github.io/about/index.html';
+        var disqus_url = 'http://initlifeinc.github.io/about/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
 
 
 

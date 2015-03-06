@@ -58,6 +58,7 @@
 <ul class="main-navigation">
   <li><a href="/">首页</a></li>
   <li><a href="/blog/archives">文章列表</a></li>
+  <li><a href="/about">关于</a></li> 
 </ul>
 
 </nav>
@@ -78,6 +79,9 @@
 
 
 <time class='entry-date' datetime='2015-03-05T12:34:00+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:34 pm</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://initlifeinc.github.io">Comments</a>
         
       </p>
     
@@ -119,6 +123,9 @@
 
 
 <p>也就是说访问github用文件github_taoxiaoseng_rsa，访问gitlab用gitlab_rsa。注意公钥也需要上传到相应的服务器里。</p>
+
+<!-- more -->
+
 
 <p>注意实际上这里的host只是你git进行命令操作的是昵称，告诉git实际上的hsotName在哪里，用什么账号名去登陆，账号对应的证书是哪个。</p>
 
@@ -266,6 +273,12 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
   </footer>
 </article>
 
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
 </div>
 
 <aside class="sidebar">
@@ -317,7 +330,12 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
 
 
 
-
+<section>
+  <h1>Categories</h1>
+  <ul id="categories">
+    {% category_list %} 
+  </ul>
+</section>
   
 </aside>
 
@@ -331,6 +349,22 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
 
 </footer>
   
+
+<script type="text/javascript">
+      var disqus_shortname = 'initllifeinc';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://initlifeinc.github.io/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/';
+        var disqus_url = 'http://initlifeinc.github.io/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
 
 
 

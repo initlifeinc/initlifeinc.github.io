@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Git | initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/blog/categories/git/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-03-06T10:40:16+08:00</updated>
+  <updated>2015-03-06T12:16:46+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -44,6 +44,9 @@ Host gitlab.alibaba-inc.com
 </code></pre>
 
 <p>也就是说访问github用文件github_taoxiaoseng_rsa，访问gitlab用gitlab_rsa。注意公钥也需要上传到相应的服务器里。</p>
+
+<!-- more -->
+
 
 <p>注意实际上这里的host只是你git进行命令操作的是昵称，告诉git实际上的hsotName在哪里，用什么账号名去登陆，账号对应的证书是哪个。</p>
 

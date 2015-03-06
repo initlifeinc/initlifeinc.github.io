@@ -58,6 +58,7 @@
 <ul class="main-navigation">
   <li><a href="/">首页</a></li>
   <li><a href="/blog/archives">文章列表</a></li>
+  <li><a href="/about">关于</a></li> 
 </ul>
 
 </nav>
@@ -81,6 +82,9 @@
 
 
 <time class='entry-date' datetime='2015-03-05T12:34:00+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:34 pm</span></time>
+        
+           | <a href="/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/#disqus_thread"
+             data-disqus-identifier="http://initlifeinc.github.io/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/">Comments</a>
         
       </p>
     
@@ -123,111 +127,12 @@
 
 <p>也就是说访问github用文件github_taoxiaoseng_rsa，访问gitlab用gitlab_rsa。注意公钥也需要上传到相应的服务器里。</p>
 
-<p>注意实际上这里的host只是你git进行命令操作的是昵称，告诉git实际上的hsotName在哪里，用什么账号名去登陆，账号对应的证书是哪个。</p>
-
-<p>所以在设置origin的时候，要考虑将这个替换下（如果涉及多账号的话）（多账号下不要随意乱复制github上的教程的命令，里面都是默认的命令）</p>
-
-<p>比如我有多账号，initlifeinc和B账号，当我需要push的时候，先特别设置origin,注意我在config里配置文件是这样的:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Host github.com
-</span><span class='line'>        HostName github.com
-</span><span class='line'>        User AAAAAAA@gmail.com
-</span><span class='line'>        IdentityFile /Users/Dick/.ssh/AAAAAAA_rsa
-</span><span class='line'>
-</span><span class='line'>Host github.com-initlife
-</span><span class='line'>        HostName github.com
-</span><span class='line'>        User initlife.inc@gmail.com
-</span><span class='line'>        IdentityFile /Users/Dick/.ssh/github_initlife_rsa</span></code></pre></td></tr></table></div></figure>
-
-
-<p>设置origin是这样的</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>git remote add origin git@github.com-initlife:initlifeinc/initlifeinc.github.io.git</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这样当我执行<code>git push origin source</code>的时候，就会将当前分支的代码push到远程仓库里的source分支了。</p>
-
-<p>其实还有些网上也经常说，这里不细提了。比如这些东西</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>git config --global user.name "you name"
-</span><span class='line'>git config --global user.email youremail@gmail.com</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>如何创建git仓库</h2>
-
-<p>其实每次你创建github里的仓库时，都会告诉你怎么去push，这里还是做下说明，讲我理解的说下。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>mkdir helloworld         
-</span><span class='line'>cd helloworld
-</span><span class='line'>git init          创建一个空的数据仓库
-</span><span class='line'>touch readme.md
-</span><span class='line'>git add .         自动判断添加相应文件到git中
-</span><span class='line'>git commit -m "commit first file"         提交并且添加提交日志
-</span><span class='line'>git remote add origin git@github.com:TaoXiaoSeng/test.git 这个最关键，说的是在本地git中添加remote的git地址，并且以origin命名，这样以后我们就不需要每次都写git地址了。实际上他在.git目录里的config添加了一条记录，类似这样的。注意我这里特意加了两个，地址不一样。注意github区分大小写的仓库路径（我的用户名有大小写，如果不完全匹配则认为访问不到了。）。另外注意这里的branch，当你init的时候默认创建的就是master。
-</span><span class='line'>          [remote "origin"]
-</span><span class='line'>              url = git@github.com:taoxiaoseng/test.git
-</span><span class='line'>              fetch = +refs/heads/*:refs/remotes/origin/*
-</span><span class='line'>          [remote "remote"]
-</span><span class='line'>              url = git@github.com:TaoXiaoSeng/test.git
-</span><span class='line'>              fetch = +refs/heads/*:refs/remotes/remote/*git 
-</span><span class='line'>          [branch "master"]
-</span><span class='line'>              remote = remote
-</span><span class='line'>              merge = refs/heads/master
-</span><span class='line'>git push -u origin master         向远程origin对应的仓库里push本地master分支。这里用-u是类似使用upstream的意思?</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>其他git命令</h2>
-
-<p>git branch      罗列所有分支
-git branch branchname   创建分支
-git checkout branchname     切换分支
-git branch -d branchname    假删除分支，如果是分支是当前正在运行的分支，则删除失败
-git branch -D branchname    真删除分支</p>
-
-<p>git ls-remote       查看远程版本库中的分支情况
-git push remote :branchname     远程删除分支，注意如果分支是默认分支，则删除失败</p>
-
-<h2>里程碑管理</h2>
-
-<p>里程碑及tag，和分支管理类似，保存在.git/refs/tags路径下，引用可能指向一个提交，但也可能是其他类型。</p>
-
-<ul>
-<li>轻量级里程碑：用git tag <tagname> [<commit>]命令创建，引用直接指向一个提交对象<commit></li>
-<li>带说明的里程碑：用git tag -a <tagname> [<commit>] 命令创建，并且在创建时需要提供创建里程碑的说明。Git会创建一个tag对象保存里程碑说明、里程碑的指向、创建里程碑的用户等信息，里程碑引用指向该Tag对象。</li>
-<li>带签名的里程碑：用git tag -s <tagname> [<commit>] 命令创建。是在带说明的里程碑的基础上引入了PGP签名，保证了所创建的里程碑的完整性和不可拒绝性。</li>
-</ul>
-
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -248,6 +153,9 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
 
 
 <time class='entry-date' datetime='2015-03-05T02:06:36+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:06 am</span></time>
+        
+           | <a href="/blog/2015/03/05/gitshi-yong-ji-github/#disqus_thread"
+             data-disqus-identifier="http://initlifeinc.github.io/blog/2015/03/05/gitshi-yong-ji-github/">Comments</a>
         
       </p>
     
@@ -317,7 +225,12 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
 
 
 
-
+<section>
+  <h1>Categories</h1>
+  <ul id="categories">
+    {% category_list %} 
+  </ul>
+</section>
   
 </aside>
 
@@ -330,6 +243,19 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
 
 </footer>
   
+
+<script type="text/javascript">
+      var disqus_shortname = 'initllifeinc';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
 
 
 
