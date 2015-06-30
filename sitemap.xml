@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://initlifeinc.github.io/blog/2015/06/30/fa-bu-zi-ji-de-githubshang-de-cocoapods-podku/</loc>
+    <lastmod>2015-06-30T21:01:40+08:00</lastmod>
+  </url>
+  <url>
     <loc>http://initlifeinc.github.io/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/</loc>
     <lastmod>2015-03-05T12:34:00+08:00</lastmod>
   </url>
@@ -10,14 +14,14 @@
   </url>
   <url>
     <loc>http://initlifeinc.github.io/blog/archives/</loc>
-    <lastmod>2015-06-25T14:35:14+08:00</lastmod>
+    <lastmod>2015-06-30T21:09:25+08:00</lastmod>
   </url>
   <url>
     <loc>http://initlifeinc.github.io/</loc>
-    <lastmod>2015-06-25T14:35:14+08:00</lastmod>
+    <lastmod>2015-06-30T21:09:25+08:00</lastmod>
   </url>
   <url>
     <loc>http://initlifeinc.github.io/about/</loc>
-    <lastmod>2015-06-25T14:35:14+08:00</lastmod>
+    <lastmod>2015-06-30T21:09:25+08:00</lastmod>
   </url>
 </urlset>
