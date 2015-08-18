@@ -9,7 +9,7 @@
   <meta name="author" content="initlife">
 
   
-  <meta name="description" content="今天第一次在github上publish一个ILEditLabel控件，同时支持了cocoapods查找该pod库。 这里简单说下几个小坑。 提交前注意给你的github的代码打tag，比如这里的0.0.1，然后编写podspec文件，对应好里面的source的tag， &hellip;">
+  <meta name="description" content="完美的私人仓库 一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。 果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,63 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/18/bitbucket/">Bitbucket</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-08-18T11:07:27+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>完美的私人仓库</h1>
+
+<p>一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。</p>
+
+<p>果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去。
+中间碰到了一些问题，以为类似github上的ssh key的添加，结果添加ssh key到repo里的一个deployment key去了（这个应该是用来专门部署的时候用的key，只读性质的）。
+查了下，发现overflow上有人说明了原因，果断尝试了OK解决问题，看客们自己也试试吧，值得推荐！</p>
+
+<p><a href="http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843">http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843</a></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>First confusion on my side was about where exactly to set SSH Keys in BitBucket.
+</span><span class='line'>
+</span><span class='line'>I am new to BitBucket and I was setting a Deployment Key which gives read-access only.
+</span><span class='line'>
+</span><span class='line'>So make sure you are setting your rsa pub key in your BitBucket Account Settings.
+</span><span class='line'>
+</span><span class='line'>Click your BitBucket avatar and select Manage account. There you'll be able to set SSH Keys.
+</span><span class='line'>
+</span><span class='line'>I simply deleted the Deployment Key, I don't need any for now. And it worked</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -232,6 +289,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/08/18/bitbucket/">Bitbucket</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/06/30/fa-bu-zi-ji-de-githubshang-de-cocoapods-podku/">发布自己的github上的cocoaPods Pod库</a>
       </li>
     
@@ -281,7 +342,9 @@
 <section> 
   <h1>文章分类</h1> 
   <ul id="categories"> 
-    <li class='category'><a href='/blog/categories/git/'>git (1)</a></li>
+    <li class='category'><a href='/blog/categories/bitbucket/'>bitbucket (1)</a></li>
+<li class='category'><a href='/blog/categories/git/'>git (1)</a></li>
+<li class='category'><a href='/blog/categories/git-/'>git, (1)</a></li>
 <li class='category'><a href='/blog/categories/ios/'>ios (1)</a></li>
  
   </ul> 
