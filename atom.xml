@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-08-24T20:33:22+08:00</updated>
+  <updated>2015-09-02T20:03:37+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,27 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一个pod Update遇到的错误处理]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/"/>
+    <updated>2015-09-02T19:52:17+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/09/02/[?]-ge-pod-updateyu-dao-de-cuo-wu-chu-li</id>
+    <content type="html"><![CDATA[<p>pod update的时候生成xcworkspace后，link的时候碰到了一个问题，就是一些pod里的库link不到，当然此时你可以跑到工程里主动添加link lib也是可以解决问题，不过那是治标不治本，实际上的处理应该是：</p>
+
+<ol>
+<li><p>观察pod update的时候的提示，比如我这个是有如下提示：</p>
+
+<pre><code class="`"> target overrides the `OTHER_LDFLAGS` build setting defined in `Pods/Target Support Files/Pods/Pods.debug.xcconfig'. This can lead to problems with the CocoaPods installation
+</code></pre>
+
+<p> 此时很明显说明pod生成的xcconfig文件里关于OTHER_LDFLAGS的设置和工程里的build setting冲突了，最后target的设置覆写了xcconfig里的设置。而你要知道工程之所以能找到pod里的link的库，就是因为这个xcconfig在起作用，现在被覆盖了，自然无效了。</p>
+
+<p> 所以为了解决这个问题，你应该首先先尝试删除工程里的build setting的Other linker flags里一些可能冲突的参数设置，然后添加 $(inherited) 进去。重新执行pod update即可解决问题</p></li>
+</ol>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Bitbucket]]></title>

@@ -9,7 +9,7 @@
   <meta name="author" content="initlife">
 
   
-  <meta name="description" content="完美的私人仓库 一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。 果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去 &hellip;">
+  <meta name="description" content="pod update的时候生成xcworkspace后，link的时候碰到了一个问题，就是一些pod里的库link不到，当然此时你可以跑到工程里主动添加link lib也是可以解决问题，不过那是治标不治本，实际上的处理应该是： 观察pod update的时候的提示，比如我这个是有如下提示： &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -61,6 +61,47 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/">一个pod Update遇到的错误处理</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-09-02T19:52:17+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2015</span></span> <span class='time'>7:52 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>pod update的时候生成xcworkspace后，link的时候碰到了一个问题，就是一些pod里的库link不到，当然此时你可以跑到工程里主动添加link lib也是可以解决问题，不过那是治标不治本，实际上的处理应该是：</p>
+
+<ol>
+<li><p>观察pod update的时候的提示，比如我这个是有如下提示：</p>
+
+<pre><code class="`"> target overrides the `OTHER_LDFLAGS` build setting defined in `Pods/Target Support Files/Pods/Pods.debug.xcconfig'. This can lead to problems with the CocoaPods installation
+</code></pre>
+
+<p> 此时很明显说明pod生成的xcconfig文件里关于OTHER_LDFLAGS的设置和工程里的build setting冲突了，最后target的设置覆写了xcconfig里的设置。而你要知道工程之所以能找到pod里的link的库，就是因为这个xcconfig在起作用，现在被覆盖了，自然无效了。</p>
+
+<p> 所以为了解决这个问题，你应该首先先尝试删除工程里的build setting的Other linker flags里一些可能冲突的参数设置，然后添加 $(inherited) 进去。重新执行pod update即可解决问题</p></li>
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -286,6 +327,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/">一个pod Update遇到的错误处理</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/08/18/bitbucket/">Bitbucket</a>
       </li>
     
@@ -340,9 +385,11 @@
   <h1>文章分类</h1> 
   <ul id="categories"> 
     <li class='category'><a href='/blog/categories/bitbucket/'>bitbucket (1)</a></li>
+<li class='category'><a href='/blog/categories/cocoapods/'>cocoapods (1)</a></li>
 <li class='category'><a href='/blog/categories/git/'>git (1)</a></li>
 <li class='category'><a href='/blog/categories/git-/'>git, (1)</a></li>
 <li class='category'><a href='/blog/categories/ios/'>ios (1)</a></li>
+<li class='category'><a href='/blog/categories/ios-/'>ios, (1)</a></li>
  
   </ul> 
 </section>
