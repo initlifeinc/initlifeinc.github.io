@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-09-08T00:38:18+08:00</updated>
+  <updated>2015-09-08T00:39:40+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -255,15 +255,6 @@ git push remote :branchname     远程删除分支，注意如果分支是默认
 <li>带签名的里程碑：用git tag -s <tagname> [<commit>] 命令创建。是在带说明的里程碑的基础上引入了PGP签名，保证了所创建的里程碑的完整性和不可拒绝性。</li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Git使用及github]]></title>
-    <link href="http://initlifeinc.github.io/blog/2015/03/05/gitshi-yong-ji-github/"/>
-    <updated>2015-03-05T02:06:36+08:00</updated>
-    <id>http://initlifeinc.github.io/blog/2015/03/05/gitshi-yong-ji-github</id>
-    <content type="html"><![CDATA[<h1>hahaha</h1>
 ]]></content>
   </entry>
   
