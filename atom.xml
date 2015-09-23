@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-09-08T00:40:16+08:00</updated>
+  <updated>2015-09-23T11:39:10+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,143 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9适配]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/09/23/ios9gua-pei/"/>
+    <updated>2015-09-23T10:53:46+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/09/23/ios9gua-pei</id>
+    <content type="html"><![CDATA[<h1>iOS9适配</h1>
+
+<p>提交iOS app的时候，踩了一遍开发都需要踩的坑，虽然其他地方都能找到，这里还是说下自己的坑</p>
+
+<h2>一、App Transport Security</h2>
+
+<p>xcode7安装后，你会发现ios9之后后默认所有http请求都无法继续有效，但是基于现状，我们并不能这么快改成https请求，所以基本上大多数app都会选择兼容老模式</p>
+
+<p>如果服务不改变，则客户端info.plist的根<dict>需加下面的键值（这些key可以手动在project的info里直接添加和修改）</p>
+
+<p>简单信任所有http服务器</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;key&gt;NSAppTransportSecurity&lt;/key&gt;
+</span><span class='line'>&lt;dict&gt;
+</span><span class='line'>      &lt;key&gt;NSAllowsArbitraryLoads&lt;/key&gt; 
+</span><span class='line'>  &lt;true/&gt;
+</span><span class='line'>&lt;/dict&gt; </span></code></pre></td></tr></table></div></figure>
+
+
+<p>或者另外严谨一些</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;key&gt;NSAppTransportSecurity&lt;/key&gt;
+</span><span class='line'>&lt;dict&gt;  
+</span><span class='line'>  &lt;key&gt;NSExceptionDomains&lt;/key&gt;  
+</span><span class='line'>      &lt;dict&gt;    
+</span><span class='line'>          &lt;key&gt;yourserver.com&lt;/key&gt;    
+</span><span class='line'>              &lt;dict&gt;      
+</span><span class='line'>              &lt;!--Include to allow subdomains--&gt;      
+</span><span class='line'>              &lt;key&gt;NSIncludesSubdomains&lt;/key&gt;
+</span><span class='line'>                  &lt;true/&gt;
+</span><span class='line'>              &lt;!--Include to allow insecure HTTP requests--&gt;                    &lt;key&gt;NSTemporaryExceptionAllowsInsecureHTTPLoads&lt;/key&gt;     
+</span><span class='line'>                  &lt;true/&gt;
+</span><span class='line'>              &lt;!--Include to specify minimum TLS version--&gt;      
+</span><span class='line'>              &lt;key&gt;NSTemporaryExceptionMinimumTLSVersion&lt;/key&gt;      
+</span><span class='line'>                  &lt;string&gt;TLSv1.2&lt;/string&gt;    
+</span><span class='line'>              &lt;!--whether domain support forward secrecy using ciphers, if not support, set false--&gt;
+</span><span class='line'>              &lt;key&gt;NSExceptionRequiresForwardSecrecy&lt;/key&gt;
+</span><span class='line'>                  &lt;false/&gt;
+</span><span class='line'>              &lt;/dict&gt;  
+</span><span class='line'>      &lt;/dict&gt;
+</span><span class='line'>&lt;/dict&gt; </span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外由于苹果的https的限制(注意理论上苹果ATS生效的是调用NSURLConnection, CFURL, or NSURLSession APIs的所有连接)，还不仅仅限于任何https，还必须满足一定的其他要求，比如加密算法的要求，TLS的协议版本等。(详情查看<a href="https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/">https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/</a>)</p>
+
+<p>比如网上有人分析了百度的https就不能满足默认的苹果https安全传输要求，因为它的TLS虽然满足TLS1.2,但是加密算法是：SHA-1 with RSA Encryption ，所以依然会被报警，所以，这种exception的情况也需要额外标注，上面的官方连接也有说明,即添加NSExceptionRequiresForwardSecrecy，并设置为false，禁止forword secrecy。</p>
+
+<h2>二、bitcode</h2>
+
+<p>xcode7 默认开启，bitcode（iwatch需要），则会导致部分第三方框架报错（比如友盟的错误）</p>
+
+<p>libMobClickLibrary.a(MobClick.o)&lsquo; does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture armv7</p>
+
+<p>这是要么更新库，要么可以在 build setting 中，搜索bitcode,并把enable bitcode 设置为 NO，这个因各自app情况而定，实际上本身不会降低上传包大小，只是开启后能降低用户下载的大小。苹果会自动根据用户自身的设备选择相关架构的下载</p>
+
+<h2>三、iOS9安装企业证书打包的app</h2>
+
+<p>企业证书打包的app，安装到手机里面后第一次打开app。不会像以前一样自动提示，信任还是不信任该证书；</p>
+
+<p>这是个时候需要iOS9 设置-》通用-》描述文件-》企业级应用 中信任对应的企业开发者。</p>
+
+<h2>四、iOS9 URL Schemes</h2>
+
+<p>苹果新上线urlScheme的限制</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>If you call the “canOpenURL” method on a URL that is not in your whitelist, 
+</span><span class='line'>  it will return “NO”, even if there is an app installed that has registered to handle this scheme. A “This app is not allowed to query for scheme xxx” syslog entry will appear.
+</span><span class='line'>
+</span><span class='line'>If you call the “openURL” method on a URL that is not in your whitelist, 
+</span><span class='line'>  it will fail silently. A “This app is not allowed to query for scheme xxx” syslog entry will appear.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>更多信息:WWDC 2015 Session 703: &ldquo;Privacy and Your App&rdquo;  <a href="https://developer.apple.com/videos/wwdc/2015/?id=703">https://developer.apple.com/videos/wwdc/2015/?id=703</a></p>
+
+<p>因此现在要搞分享的时候，除了要在项目info URL Types中设置URL Schemes，还需要在info.plist里面增加可信任的调用app url scheme，否则回报如下错误</p>
+
+<p>-canOpenURL: failed for URL: &ldquo;weixin://app/wx********/&rdquo; - error: &ldquo;This app is not allowed to query for scheme weixin&rdquo;</p>
+
+<p>只需要添加如下代码即可，在info.plist里加入</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;key&gt;LSApplicationQueriesSchemes&lt;/key&gt;
+</span><span class='line'>  &lt;array&gt;
+</span><span class='line'>  &lt;string&gt;weixin&lt;/string&gt;
+</span><span class='line'>  &lt;string&gt;wechat&lt;/string&gt;
+</span><span class='line'>  &lt;string&gt;sina&lt;/string&gt;
+</span><span class='line'>  &lt;string&gt;weibo&lt;/string&gt;
+</span><span class='line'>&lt;/array&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>你也可以查看友盟分享SDK适配iOS9的文档：<a href="http://dev.umeng.com/social/ios/ios9">http://dev.umeng.com/social/ios/ios9</a></p>
+
+<p>未完待续</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一个pod Update遇到的错误处理]]></title>
