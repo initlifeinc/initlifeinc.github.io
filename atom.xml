@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-09-23T11:39:10+08:00</updated>
+  <updated>2015-10-19T19:55:33+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,283 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu/"/>
+    <updated>2015-10-19T19:53:35+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu</id>
+    <content type="html"><![CDATA[<h1>通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</h1>
+
+<p>众所周知，iOS 9.0之后苹果引入ATS限制，苹果也推荐尽量不要使用HTTP通讯了，毕竟是很不安全的。而国内各个有(wu)节操的运营商也会经常篡改请求HTTP请求。所以如果可能，在不影响性能的情况下，使用https总是更好一点。但是移动网络下HTTPS的握手耗时，也总是很让人难已接受。那么考虑整合Spdy来减少握手时间的损耗，复用链接来进行通讯，是一个不错的尝试。</p>
+
+<p>但对于老的app，尤其是本地已经存储了大量的老旧URL来说，尝试数据升级将本地数据库里的各种http转成https的操作也是令人发指的，尤其是这种操作很不适合做灰度测试发布。总不能数据改来改去，对于那些可能本地存了几万几十万条消息记录的app来说，简直是灾难。因此如何寻求在老的app上完成http的请求转https的请求，以及整合spdy来减少握手时间，提升弱网效果就显的很重要，而我们应该寻找优雅的解决方式来完成过渡。</p>
+
+<p>注：这里不讨论为什么不用HTTP2.0，不选择总有不选择的原因，再换个角度，你完成了spdy的接入，HTTP2.0的接入从大体思路上是类似的。</p>
+
+<p>注：由于NSURLProtocol的拦截及再发送，涉及的坑很多，这里先不讲了，大家也可以参考下<a href="https://github.com/marcuswestin/WebViewProxy">这个</a>，里面已经埋了不少坑。</p>
+
+<h2>Spdy的选择及注意事项</h2>
+
+<p>对于iOS来说，现有的spdy开源库，暂时可以考虑<a href="https://github.com/twitter/CocoaSPDY">CocoaSpdy</a>, 说起Spdy，大家第一反应一般是多路复用请求（multiplexing requests），头部压缩等特性，其实Spdy的设计里充分考虑了cancel的需要，这个特性其实也是非常重要的，否则复用链接会引入一个灾难的问题（就是上层已经cancel的请求在复用链路中堆积而影响后续各种请求）。</p>
+
+<p>注：以下我们考虑的是采用NSURLConnection的请求的拦截。</p>
+
+<p>CocoaSpdy的设计里采用在SPDYURLConnectionProtocol的load函数里将自己注册到NSURLProtocol里，作为独立的第三方库，这个可以帮你省却一些烦恼，快速接入Spdy。</p>
+
+<p>但是当你发现你的app可能因为已经引入另一个NSURLProtocol的子类来做流量统计，缓存命中，甚至HTTPDNS的转换（不了解这块的可以查看下<a href="http://mp.weixin.qq.com/s?__biz=MzA3ODgyNzcwMw==&amp;mid=201837080&amp;idx=1&amp;sn=b2a152b84df1c7dbd294ea66037cf262&amp;scene=2&amp;from=timeline&amp;isappinstalled=0#rd">这里</a>）的时候，那么默认的load自动注册可能会引发拦截顺序问题，所以这里我还是注释掉了cocoaspdy的这个代码。改由自己手动注册，注意如果你要关注下注册的顺序和生效的顺序，先注册的后生效。</p>
+
+<h3>接入基本步骤：</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>1. 注册SPDYURLConnectionProtocol
+</span><span class='line'>2. 注册original，即针对哪个scheme，host，port进行拦截
+</span><span class='line'>3. 设置logger的delegate和logLevel，另外可以考虑设置并发数。
+</span><span class='line'>4. 等待相关的URL请求触发相关protocol的拦截，CocoaSpdy内部会解析请求，并进行相关请求及返回。</span></code></pre></td></tr></table></div></figure>
+
+
+<p>也可以看下如下的基本代码</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// 先注册spdy的protocol
+</span><span class='line'>[NSURLProtocol registerClass:[SPDYURLConnectionProtocol class]];
+</span><span class='line'>// 下面这个可以先忽略，用于拦截http转https等用处
+</span><span class='line'>[NSURLProtocol registerClass:NSClassFromString(@"ILURLProtocol")];
+</span><span class='line'>
+</span><span class='line'>// 注册拦截的规则，这里是预注册，如果你使用过程中有新引入一些域名，也可以临时再添加注册
+</span><span class='line'>[SPDYURLConnectionProtocol registerOrigin:@"https://static.dingtalk.com"];
+</span><span class='line'>// log的delegate和loglevel
+</span><span class='line'>[SPDYProtocol setLogger:self];
+</span><span class='line'>[SPDYProtocol setLoggerLevel:SPDYLogLevelDebug];
+</span><span class='line'>// 设置pool的并发数，注意，这个是针对每个origin的的size。
+</span><span class='line'>SPDYConfiguration *configration = [SPDYProtocol currentConfiguration];
+</span><span class='line'>configration.sessionPoolSize = 3;
+</span><span class='line'>[SPDYProtocol setConfiguration:configration];
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>完成后，就可以通过下载https图片来观察下载情况了（注意spdy的日志打印）
+</span><span class='line'>比如引入sdwebimage显示图片，
+</span><span class='line'>
+</span><span class='line'>NSString imageurl = @"https://static.dingtalk.com/media/lADOAaoJdM0FNs0D6A_1000_1334.jpg_790x10000g.jpg";
+</span><span class='line'>[cell.imageView sd_setImageWithURL:[NSURL URLWithString:imageurl]
+</span><span class='line'>                  placeholderImage:[UIImage imageNamed:@"lock"]
+</span><span class='line'>                           options:SDWebImageRefreshCached|SDWebImageCacheMemoryOnly
+</span><span class='line'>                         completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+</span><span class='line'>                                 NSLog(@"%@ %@ %ld", image, error, (long)cacheType);
+</span><span class='line'>                             }];</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Spdy的一些基本概念和关系</h3>
+
+<p>Spdy在SSL层上加了一个SPDY session 层，来实现并发和stream机制。对CocoaSpdy来说，也就有SPDYSessionManager的概念，每个origin（SPDYStream）都有一个session manager（SPDYSessionManager），管理session pool和stream队列，每个session（SPDYSession，相当于一条spdy链接）都可以用来发送stream，每个stream就意味着上层发起的一个request，cancel一个请求，实际上是cancel一个stream，cancel也不是简单的移除stream，更会向服务端发起cancel stream的操作。服务端收到后会停止继续推送当前正在处理的stream请求的数据。这对于大数据量的文件下载尤为重要。</p>
+
+<h2>HTTP进行HTTPDNS和HTTPS的URL拦截转换</h2>
+
+<p>我们需要拦截HTTP，也要拦截那些指定域名被HTTPDNS之后的请求，比如
+@&ldquo;<a href="http://static.dingtalk.com/media/lADOAAJMIs0CgM0CgA_640_640.jpg_90x90.jpg">http://static.dingtalk.com/media/lADOAAJMIs0CgM0CgA_640_640.jpg_90x90.jpg</a>&rdquo; 经过httpdns处理之后，获取到的ip可能为 @&ldquo;<a href="http://110.75.113.81/media/lADOAAj5i80CgM0CgA_640_640.jpg_90x90.jpg">http://110.75.113.81/media/lADOAAj5i80CgM0CgA_640_640.jpg_90x90.jpg</a>&#8220;，host填为static.dingtalk.com。
+此时我们同样可以将这个<a href="http://110.75.113.81/media/lADOAAj5i80CgM0CgA_640_640.jpg_90x90.jpg">http://110.75.113.81/media/lADOAAj5i80CgM0CgA_640_640.jpg_90x90.jpg</a> 拦截下来（通过在request header里的host判断，当然对于spdy来说，你还需要注册对于110.75.113.81的拦截，而且最好还要添加对于host里的域名判断）。</p>
+
+<p>这里还涉及到如何让spdy支持对IP类型的地址进行https握手建连的问题，这里需要说明的是，服务端配spdy的时候需要支持SNI的扩展，客户端在ssl建连的时候也需要主动握手参数添加kCFStreamSSLPeerName值为host来覆盖用于证书校验的名字。</p>
+
+<p>我修改了下CocoaSpdy里的_tryTLSHandhshake的部分代码，从而让ip类型的服务器地址支持https握手建连。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>// 注：SpdyOrigin类被改造支持domainHost参数来保存host值，这样原host就可以保存ip，这里保存时机host了。
+</span><span class='line'>if (_endpoint.origin.domainHost.length &gt; 0) {
+</span><span class='line'>            NSMutableDictionary *newTlsSettings = [tlsOp-&gt;_tlsSettings mutableCopy];
+</span><span class='line'>            newTlsSettings[(__bridge NSString *)kCFStreamSSLPeerName] = _endpoint.origin.domainHost;
+</span><span class='line'>            tlsOp-&gt;_tlsSettings = newTlsSettings;
+</span><span class='line'>        }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>spdy里http转https的一些主要代码。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>+ (BOOL)canInitWithRequest:(NSURLRequest *)request
+</span><span class='line'>{
+</span><span class='line'>    // 由于我们做的是将http转成https，所以就不怕行程循环触发protocol
+</span><span class='line'>    if ([request.URL.scheme isEqualToString:@"http"]) {
+</span><span class='line'>        return YES;
+</span><span class='line'>    }
+</span><span class='line'>    return NO;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>+ (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request
+</span><span class='line'>{
+</span><span class='line'>    return [self tryGetHttpsRequest:request];
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (NSURLRequest *)tryGetHttpsRequest:(NSURLRequest *)oldReq
+</span><span class='line'>{
+</span><span class='line'>    NSString *oldScheme = [[oldReq.URL scheme] lowercaseString];
+</span><span class='line'>    
+</span><span class='line'>    if ([oldScheme isEqualToString:@"http"] && [self shouldInterceptorRequest:oldReq]) {
+</span><span class='line'>        NSMutableURLRequest *newReq = [oldReq mutableCopy];
+</span><span class='line'>        NSURL *newUrl = [[NSURL alloc] initWithScheme:@"https" host:oldReq.URL.host path:oldReq.URL.path];
+</span><span class='line'>        newReq.URL = newUrl;
+</span><span class='line'>        // 下面这段代码是因为现有的有spdy服务器对于strem header里中文直接断开连接，而cocoaspdy里获取的是应用的名称，如果你的名称正好是中文，会导致steam一发送就被rst，所以我们主动去创建一个host，这样spdy就不会用内部的defaultuseragent来覆盖
+</span><span class='line'>        if (![newReq valueForHTTPHeaderField:@"User-Agent"]) {
+</span><span class='line'>            NSMutableDictionary *allHTTPHeaderFields = [newReq.allHTTPHeaderFields mutableCopy];
+</span><span class='line'>            [allHTTPHeaderFields setObject:[self getDefaultUserAgent] forKey:@"User-Agent"];
+</span><span class='line'>            newReq.allHTTPHeaderFields = allHTTPHeaderFields;
+</span><span class='line'>        }
+</span><span class='line'>        return newReq;
+</span><span class='line'>    }
+</span><span class='line'>    
+</span><span class='line'>    return oldReq;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (instancetype)initWithHosts:(NSArray *)hosts
+</span><span class='line'>{
+</span><span class='line'>    self = [super init];
+</span><span class='line'>    if (self)
+</span><span class='line'>    {
+</span><span class='line'>      //拦截HTTP,并且host为指定的host
+</span><span class='line'>        _predicate = [NSPredicate predicateWithFormat:@"scheme MATCHES 'http' AND host IN[cd] %@", hosts];
+</span><span class='line'>        _hostPredicate = [NSPredicate predicateWithFormat:@"SELF IN[cd] %@", hosts];
+</span><span class='line'>    }
+</span><span class='line'>    
+</span><span class='line'>    return self;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (BOOL)shouldInterceptorRequest:(NSURLRequest *)request
+</span><span class='line'>{
+</span><span class='line'>    if ([self.predicate evaluateWithObject:request.URL])
+</span><span class='line'>    {
+</span><span class='line'>        return YES;
+</span><span class='line'>    }
+</span><span class='line'>    
+</span><span class='line'>    // 这个是针对httpdns之后，host已经转到request里的host字段里了，所以做二次判断。
+</span><span class='line'>    if ([self isHeaderHostVaild:request]) {
+</span><span class='line'>        return YES;
+</span><span class='line'>    }
+</span><span class='line'>    
+</span><span class='line'>    return NO;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>- (BOOL)isHeaderHostVaild:(NSURLRequest *)request
+</span><span class='line'>{
+</span><span class='line'>    NSString *hostInHeader = [request valueForHTTPHeaderField:@"Host"];
+</span><span class='line'>    if (hostInHeader && [self.hostPredicate evaluateWithObject:hostInHeader]) {
+</span><span class='line'>        return YES;
+</span><span class='line'>    }
+</span><span class='line'>    return NO;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>One more thing</h2>
+
+<p>当你完成http转httpdns，转https之后，你可能碰到sdwebimage在滚出页面的时候，会去cancel request，但是走spdy之后，它会触发protocol的stopLoading方法，此时需要关注这个stopLoading触发的时候，此前用于2次转发的NSUrlConnection对象我们需要判断handler是否可用，如果可用，说明并不是正常结束，而是被cancel了，此时应该执行[connectoin cancel]操作。</p>
+
+<h2>关于ATS</h2>
+
+<p>这里简单说明下ATS，不细说，详情各位看官自己google下，一大堆资料,也可以查看<a href="http://initlife.com/blog/2015/09/23/ios9gua-pei/">这里</a>.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS9适配]]></title>

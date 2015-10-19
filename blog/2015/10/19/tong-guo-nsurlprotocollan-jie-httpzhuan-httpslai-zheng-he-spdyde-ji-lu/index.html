@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>initlife&#8217;s Blog</title>
+  <title>通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录 - initlife&#8217;s Blog</title>
   <meta name="author" content="initlife">
 
   
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://initlifeinc.github.io/">
+  <link rel="canonical" href="http://initlifeinc.github.io/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="initlife's Blog" type="application/atom+xml">
@@ -59,15 +59,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu/">通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</a></h1>
+      <h1 class="entry-title">通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</h1>
     
     
       <p class="meta">
@@ -83,7 +80,7 @@
   </header>
 
 
-  <div class="entry-content"><h1>通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</h1>
+<div class="entry-content"><h1>通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</h1>
 
 <p>众所周知，iOS 9.0之后苹果引入ATS限制，苹果也推荐尽量不要使用HTTP通讯了，毕竟是很不安全的。而国内各个有(wu)节操的运营商也会经常篡改请求HTTP请求。所以如果可能，在不影响性能的情况下，使用https总是更好一点。但是移动网络下HTTPS的握手耗时，也总是很让人难已接受。那么考虑整合Spdy来减少握手时间的损耗，复用链接来进行通讯，是一个不错的尝试。</p>
 
@@ -353,398 +350,76 @@
 
 <p>这里简单说明下ATS，不细说，详情各位看官自己google下，一大堆资料,也可以查看<a href="http://initlife.com/blog/2015/09/23/ios9gua-pei/">这里</a>.</p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/09/23/ios9gua-pei/">iOS9适配</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-09-23T10:53:46+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2015</span></span> <span class='time'>10:53 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h1>iOS9适配</h1>
-
-<p>提交iOS app的时候，踩了一遍开发都需要踩的坑，虽然其他地方都能找到，这里还是说下自己的坑</p>
-
-<h2>一、App Transport Security</h2>
-
-<p>xcode7安装后，你会发现ios9之后后默认所有http请求都无法继续有效，但是基于现状，我们并不能这么快改成https请求，所以基本上大多数app都会选择兼容老模式</p>
-
-<p>如果服务不改变，则客户端info.plist的根<dict>需加下面的键值（这些key可以手动在project的info里直接添加和修改）</p>
-
-<p>简单信任所有http服务器</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;key&gt;NSAppTransportSecurity&lt;/key&gt;
-</span><span class='line'>&lt;dict&gt;
-</span><span class='line'>      &lt;key&gt;NSAllowsArbitraryLoads&lt;/key&gt; 
-</span><span class='line'>  &lt;true/&gt;
-</span><span class='line'>&lt;/dict&gt; </span></code></pre></td></tr></table></div></figure>
-
-
-<p>或者另外严谨一些</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;key&gt;NSAppTransportSecurity&lt;/key&gt;
-</span><span class='line'>&lt;dict&gt;  
-</span><span class='line'>  &lt;key&gt;NSExceptionDomains&lt;/key&gt;  
-</span><span class='line'>      &lt;dict&gt;    
-</span><span class='line'>          &lt;key&gt;yourserver.com&lt;/key&gt;    
-</span><span class='line'>              &lt;dict&gt;      
-</span><span class='line'>              &lt;!--Include to allow subdomains--&gt;      
-</span><span class='line'>              &lt;key&gt;NSIncludesSubdomains&lt;/key&gt;
-</span><span class='line'>                  &lt;true/&gt;
-</span><span class='line'>              &lt;!--Include to allow insecure HTTP requests--&gt;                    &lt;key&gt;NSTemporaryExceptionAllowsInsecureHTTPLoads&lt;/key&gt;     
-</span><span class='line'>                  &lt;true/&gt;
-</span><span class='line'>              &lt;!--Include to specify minimum TLS version--&gt;      
-</span><span class='line'>              &lt;key&gt;NSTemporaryExceptionMinimumTLSVersion&lt;/key&gt;      
-</span><span class='line'>                  &lt;string&gt;TLSv1.2&lt;/string&gt;    
-</span><span class='line'>              &lt;!--whether domain support forward secrecy using ciphers, if not support, set false--&gt;
-</span><span class='line'>              &lt;key&gt;NSExceptionRequiresForwardSecrecy&lt;/key&gt;
-</span><span class='line'>                  &lt;false/&gt;
-</span><span class='line'>              &lt;/dict&gt;  
-</span><span class='line'>      &lt;/dict&gt;
-</span><span class='line'>&lt;/dict&gt; </span></code></pre></td></tr></table></div></figure>
-
-
-<p>另外由于苹果的https的限制(注意理论上苹果ATS生效的是调用NSURLConnection, CFURL, or NSURLSession APIs的所有连接)，还不仅仅限于任何https，还必须满足一定的其他要求，比如加密算法的要求，TLS的协议版本等。(详情查看<a href="https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/">https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/</a>)</p>
-
-<p>比如网上有人分析了百度的https就不能满足默认的苹果https安全传输要求，因为它的TLS虽然满足TLS1.2,但是加密算法是：SHA-1 with RSA Encryption ，所以依然会被报警，所以，这种exception的情况也需要额外标注，上面的官方连接也有说明,即添加NSExceptionRequiresForwardSecrecy，并设置为false，禁止forword secrecy。</p>
-
-<h2>二、bitcode</h2>
-
-<p>xcode7 默认开启，bitcode（iwatch需要），则会导致部分第三方框架报错（比如友盟的错误）</p>
-
-<p>libMobClickLibrary.a(MobClick.o)&lsquo; does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture armv7</p>
-
-<p>这是要么更新库，要么可以在 build setting 中，搜索bitcode,并把enable bitcode 设置为 NO，这个因各自app情况而定，实际上本身不会降低上传包大小，只是开启后能降低用户下载的大小。苹果会自动根据用户自身的设备选择相关架构的下载</p>
-
-<h2>三、iOS9安装企业证书打包的app</h2>
-
-<p>企业证书打包的app，安装到手机里面后第一次打开app。不会像以前一样自动提示，信任还是不信任该证书；</p>
-
-<p>这是个时候需要iOS9 设置-》通用-》描述文件-》企业级应用 中信任对应的企业开发者。</p>
-
-<h2>四、iOS9 URL Schemes</h2>
-
-<p>苹果新上线urlScheme的限制</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>If you call the “canOpenURL” method on a URL that is not in your whitelist, 
-</span><span class='line'>  it will return “NO”, even if there is an app installed that has registered to handle this scheme. A “This app is not allowed to query for scheme xxx” syslog entry will appear.
-</span><span class='line'>
-</span><span class='line'>If you call the “openURL” method on a URL that is not in your whitelist, 
-</span><span class='line'>  it will fail silently. A “This app is not allowed to query for scheme xxx” syslog entry will appear.</span></code></pre></td></tr></table></div></figure>
-
-
-<p>更多信息:WWDC 2015 Session 703: &ldquo;Privacy and Your App&rdquo;  <a href="https://developer.apple.com/videos/wwdc/2015/?id=703">https://developer.apple.com/videos/wwdc/2015/?id=703</a></p>
-
-<p>因此现在要搞分享的时候，除了要在项目info URL Types中设置URL Schemes，还需要在info.plist里面增加可信任的调用app url scheme，否则回报如下错误</p>
-
-<p>-canOpenURL: failed for URL: &ldquo;weixin://app/wx********/&rdquo; - error: &ldquo;This app is not allowed to query for scheme weixin&rdquo;</p>
-
-<p>只需要添加如下代码即可，在info.plist里加入</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;key&gt;LSApplicationQueriesSchemes&lt;/key&gt;
-</span><span class='line'>  &lt;array&gt;
-</span><span class='line'>  &lt;string&gt;weixin&lt;/string&gt;
-</span><span class='line'>  &lt;string&gt;wechat&lt;/string&gt;
-</span><span class='line'>  &lt;string&gt;sina&lt;/string&gt;
-</span><span class='line'>  &lt;string&gt;weibo&lt;/string&gt;
-</span><span class='line'>&lt;/array&gt;</span></code></pre></td></tr></table></div></figure>
-
-
-<p>你也可以查看友盟分享SDK适配iOS9的文档：<a href="http://dev.umeng.com/social/ios/ios9">http://dev.umeng.com/social/ios/ios9</a></p>
-
-<p>未完待续</p>
-</div>
-  
   
 
+<span class="byline author vcard">Posted by <span class="fn">initlife</span></span>
 
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/">一个pod Update遇到的错误处理</a></h1>
-    
-    
-      <p class="meta">
-        
 
 
 
 
-<time class='entry-date' datetime='2015-09-02T19:52:17+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2015</span></span> <span class='time'>7:52 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>pod update的时候生成xcworkspace后，link的时候碰到了一个问题，就是一些pod里的库link不到，当然此时你可以跑到工程里主动添加link lib也是可以解决问题，不过那是治标不治本，实际上的处理应该是：</p>
-
-<ol>
-<li><p>观察pod update的时候的提示，比如我这个是有如下提示：</p>
-
-<pre><code class="`"> target overrides the `OTHER_LDFLAGS` build setting defined in `Pods/Target Support Files/Pods/Pods.debug.xcconfig'. This can lead to problems with the CocoaPods installation
-</code></pre>
-
-<p> 此时很明显说明pod生成的xcconfig文件里关于OTHER_LDFLAGS的设置和工程里的build setting冲突了，最后target的设置覆写了xcconfig里的设置。而你要知道工程之所以能找到pod里的link的库，就是因为这个xcconfig在起作用，现在被覆盖了，自然无效了。</p>
-
-<p> 所以为了解决这个问题，你应该首先先尝试删除工程里的build setting的Other linker flags里一些可能冲突的参数设置，然后添加 $(inherited) 进去。重新执行pod update即可解决问题</p></li>
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
+<time class='entry-date' datetime='2015-10-19T19:53:35+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>7:53 pm</span></time>
       
-  <header>
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ios/'>ios</a>
+  
+</span>
+
+
+    </p>
     
-      <h1 class="entry-title"><a href="/blog/2015/08/18/bitbucket/">Bitbucket</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-08-18T11:07:27+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h1>完美的私人仓库</h1>
-
-<p>一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。</p>
-
-<p>果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去。
-中间碰到了一些问题，以为类似github上的ssh key的添加，结果添加ssh key到repo里的一个deployment key去了（这个应该是用来专门部署的时候用的key，只读性质的）。
-查了下，发现overflow上有人说明了原因，果断尝试了OK解决问题，看客们自己也试试吧，值得推荐！</p>
-
-<p><a href="http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843">http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843</a></p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>First confusion on my side was about where exactly to set SSH Keys in BitBucket.
-</span><span class='line'>
-</span><span class='line'>I am new to BitBucket and I was setting a Deployment Key which gives read-access only.
-</span><span class='line'>
-</span><span class='line'>So make sure you are setting your rsa pub key in your BitBucket Account Settings.
-</span><span class='line'>
-</span><span class='line'>Click your BitBucket avatar and select Manage account. There you'll be able to set SSH Keys.
-</span><span class='line'>
-</span><span class='line'>I simply deleted the Deployment Key, I don't need any for now. And it worked</span></code></pre></td></tr></table></div></figure>
-
+      <div class="sharing">
+  
+  
+  
+  
+     <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<a class="jiathis_button_tsina"></a>
+<a class="jiathis_button_weixin"></a>
+<a class="jiathis_button_copy"></a>
+<a href="http://www.jiathis.com/share?uid=2011867" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+<a class="jiathis_counter_style"></a>
 </div>
-  
-  
+<script type="text/javascript" >
+var jiathis_config={
+	data_track_clickback:true,
+	summary:"",
+	shortUrl:false,
+	hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=2011867" charset="utf-8"></script>
+<!-- JiaThis Button END -->
 
 
-    </article>
+<!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2011867"></script>
+<!-- UY END -->
   
-  
-    <article>
+</div>
+
+    
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/06/30/fa-bu-zi-ji-de-githubshang-de-cocoapods-podku/">发布自己的github上的cocoaPods Pod库</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-06-30T21:01:40+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:01 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天第一次在github上publish一个ILEditLabel控件，同时支持了cocoapods查找该pod库。</p>
-
-<p>这里简单说下几个小坑。</p>
-
-<p>提交前注意给你的github的代码打tag，比如这里的0.0.1，然后编写podspec文件，对应好里面的source的tag，其实可以将pod的tag和你的库的tag一致，这样方便记忆。</p>
-
-<p>然后你需要执行pod spec lint specFile测试下是否spec文件编写正确。</p>
-
-<p>如果发现远程tag打错了，你可以通过命令<code>git push origin refs/tags/yourtag</code>来删除远程tag。</p>
-
-<p>通过podspec文件的检测后，就到了发布该spec文件了。</p>
-
-<p>那就是需要通过<code>pod trunk push specFile</code>的方式来提交spec文件到cocoapods上。</p>
-
-<p>但是由于我是第一次提交，执行命令后提示：</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>You need to register a session first.</span></code></pre></td></tr></table></div></figure>
-
-
-<p>所以需要参照cocoapods上的这篇文章<a href="http://guides.cocoapods.org/making/getting-setup-with-trunk.html">Getting setup with Trunk</a>先注册自己的session。</p>
-
-<p>注册需要执行如下命令：</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>pod trunk register orta@cocoapods.org 'Orta Therox' --description='macbook air'</span></code></pre></td></tr></table></div></figure>
-
-
-<p>然后你就会在你输入的orta@cocoapods.org邮箱里收到一个email，点击里面的连接完成认证，之后你就可以完成提交。至此自己故障庆祝吧~~~</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
+        <a class="basic-alignment left" href="/blog/2015/09/23/ios9gua-pei/" title="Previous Post: iOS9适配">&laquo; iOS9适配</a>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/">Git及github使用，github多账号免登</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-03-05T12:34:00+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:34 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h1>git使用及github</h1>
-
-<p>git 和github越来越多人使用，作为一个程序员，应该懂的怎么去用，而我就是个不怎么会用的人，所以我的主管在我刚开始上班的时候就要我去熟悉git那套东西。</p>
-
-<p>当时我依然不是很懂，但最近开始迷糊的懂了，下面是我这段时间的心得。</p>
-
-<h2>创建ssh从而能免登访问github。</h2>
-
-<p>命令<code>ssh-keygen</code>去创建公钥私钥，如果你只希望访问一个服务器的话，比如github，那么你就放到默认的目录下，并且使用默认的私钥和公钥文件路径，即~/.ssh/id_rsa和~/.ssh/id_rsa.pub，其中id_rsa.pub是公钥文件。我们需要将这个文件里的数据复制并粘贴到github上的ssh key里。从而通过ssh就可以面等访问github了。</p>
-
-<p>   如果你有多个服务器需要访问，比如我们还需要访问gitlab，那么，这个时候，需要~/.ssh/config文件里的配置来区分服务器和ssh秘钥。(记得添加rsa 命令：ssh-add ~/.ssh/your_rsa)</p>
-
-<p>   比如我自己的配置为</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Host github.com
-</span><span class='line'>  HostName github.com
-</span><span class='line'>  User taoxiaoseng@gmail.com
-</span><span class='line'>  IdentityFile /Users/Dick/.ssh/github_taoxiaoseng_rsa
-</span><span class='line'>  
-</span><span class='line'>Host gitlab.alibaba-inc.com
-</span><span class='line'>  HostName gitlab.alibaba-inc.com
-</span><span class='line'>  User guodi.ggd@taobao.com
-</span><span class='line'>  IdentityFile /Users/Dick/.ssh/gitlab_rsa</span></code></pre></td></tr></table></div></figure>
-
-
-<p>也就是说访问github用文件github_taoxiaoseng_rsa，访问gitlab用gitlab_rsa。注意公钥也需要上传到相应的服务器里。</p>
+      
+    </p>
+  </footer>
+</article>
 
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/">Read on &rarr;</a>
-    </footer>
-  
 
-
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
 <aside class="sidebar">
   
     <section>
@@ -820,6 +495,7 @@
 </section>
   
 </aside>
+
 
     </div>
   </div>
