@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-10-19T19:55:33+08:00</updated>
+  <updated>2015-10-28T17:15:59+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,139 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[iOS里的栈限制引发的crash]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/10/28/iosli-de-zhan-xian-zhi-yin-fa-de-crash/"/>
+    <updated>2015-10-28T17:14:53+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/10/28/iosli-de-zhan-xian-zhi-yin-fa-de-crash</id>
+    <content type="html"><![CDATA[<p>昨天一个开发说，app一启动就崩溃，而且是添加了一个比较变态的测试数据后引发的，调试后发现崩溃在IDL的解析代码里，结果分析测试发现原来问题出现在iOS栈上。</p>
+
+<h1>问题分析</h1>
+
+<p>代码如下：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>-(NSData *) readRaw: (uint8_t) t
+</span><span class='line'>{
+</span><span class='line'>    int32_t len = 0;
+</span><span class='line'>    if ((t & 0xe0) == 0xa0) { // FixArray
+</span><span class='line'>        len = t & 0x1f;
+</span><span class='line'>    } else if ((t & 0xff) == 0xda) { // raw 16
+</span><span class='line'>        len = (uint16_t)[inputStream readShort];
+</span><span class='line'>    } else if ((t & 0xff) == 0xdb) {// raw 32
+</span><span class='line'>        len = (uint32_t)[inputStream readInt];
+</span><span class='line'>    }
+</span><span class='line'>    if (len == 0) {
+</span><span class='line'>        return nil;
+</span><span class='line'>    }
+</span><span class='line'>    uint8_t buffer[len];
+</span><span class='line'>    [inputStream readBytes:buffer length:len];
+</span><span class='line'>    return [NSData dataWithBytes:(const char *)&buffer length: len];
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>// read
+</span><span class='line'>-(unsigned int) readBytes: (uint8_t *)buff length: (unsigned int) len
+</span><span class='line'>{
+</span><span class='line'>    if(len &lt;= 0){
+</span><span class='line'>        @throw [NSException exceptionWithName:@"PackException" reason:@"args is illegal" userInfo:nil ];
+</span><span class='line'>    }
+</span><span class='line'>    if (totalSize - mOffset &lt; len) {
+</span><span class='line'>        @throw [NSException exceptionWithName:@"EOFException" reason:@"Not enough bytes remain in buffer" userInfo:nil ];
+</span><span class='line'>  }
+</span><span class='line'>  [mBuffer getBytes:buff range:NSMakeRange(mOffset, len)];//&lt;===崩溃在这里。
+</span><span class='line'>  mOffset += len;
+</span><span class='line'>    if (mOffset &gt;= GARBAGE_BUFFER_SIZE) {
+</span><span class='line'>      [mBuffer replaceBytesInRange:NSMakeRange(0, mOffset) withBytes:NULL length:0];
+</span><span class='line'>      mOffset = 0;
+</span><span class='line'>        totalSize = [mBuffer length];
+</span><span class='line'>  }
+</span><span class='line'>  return len;
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>error错误是bad access，而<code>从-(unsigned int) readBytes: (uint8_t *)buff length: (unsigned int) len</code>函数本来来看基本很难看出来，所以需要往上看一个函数调用，从代码本身来看也还算正常，当然细心的人可能会看到这里有个比较危险的代码，没错就是它。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if (len == 0) {
+</span><span class='line'>    return nil;
+</span><span class='line'>}
+</span><span class='line'>uint8_t buffer[len];      //&lt;====就是它
+</span><span class='line'>[inputStream readBytes:buffer length:len];</span></code></pre></td></tr></table></div></figure>
+
+
+<p>len的大小其实是不可控的，是由服务端返回的一个值，用来表示msgpack后面的某个字段的数据的长度。而这里使用了栈申请内存，此时就面临万一len大于一定值后，导致申请内存会破坏栈了。</p>
+
+<p>当然在我们申请内存的时候并不会崩溃，毕竟这里还没有开始写操作，而当你调用<code>[mBuffer getBytes:buff range:NSMakeRange(mOffset, len)];</code>方法的时候，就棉铃将数据mBuffer里的数据copy到buff对象里了，此时就会将栈上的数据给破坏掉了，从而导致崩溃。因此也就解释了为什么崩溃是在后面的方法里。</p>
+
+<h2>处理结果</h2>
+
+<p>既然知道了是栈申请大内存导致栈被破坏掉了而引发的崩溃，所以自然需要将栈内存改成堆内存就可以了。在不大规模修改代码的情况下，便有了下面的fix代码</p>
+
+<pre><code> uint8_t *buffer = malloc(len+1);
+memset(buffer, 0, sizeof(buffer));
+[inputStream readBytes:buffer length:len];
+return [NSData dataWithBytesNoCopy:(void *)buffer length:len];
+</code></pre>
+
+<p>为了尽量少的内存拷贝，首选dataWithBytesNoCopy。</p>
+
+<h2>结论</h2>
+
+<p>那么到底这个栈有多大呢？平时碰到的，google了下，结论是：</p>
+
+<p><strong>iOS上主线程栈大小1MB，其他线程512K，OSX上主线程栈大小8M</strong></p>
+
+<p><img src="https://static.dingtalk.com/media/lALOAjbqsM0Bac0Eng_1182_361.png_450x10000q90.jpg" alt="stack size limit" /></p>
+
+<p>更多详细请看：</p>
+
+<p><a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/CreatingThreads/CreatingThreads.html">https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/CreatingThreads/CreatingThreads.html</a></p>
+
+<p>另外说明下，对于不可知大小的内存申请，本来也不应该通过栈申请内存来做数据处理。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录]]></title>
