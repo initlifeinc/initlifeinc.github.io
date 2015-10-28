@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-10-28T17:15:59+08:00</updated>
+  <updated>2015-10-28T17:17:16+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -18,9 +18,7 @@
     <link href="http://initlifeinc.github.io/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu/"/>
     <updated>2015-10-19T19:53:35+08:00</updated>
     <id>http://initlifeinc.github.io/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu</id>
-    <content type="html"><![CDATA[<h1>通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</h1>
-
-<p>众所周知，iOS 9.0之后苹果引入ATS限制，苹果也推荐尽量不要使用HTTP通讯了，毕竟是很不安全的。而国内各个有(wu)节操的运营商也会经常篡改请求HTTP请求。所以如果可能，在不影响性能的情况下，使用https总是更好一点。但是移动网络下HTTPS的握手耗时，也总是很让人难已接受。那么考虑整合Spdy来减少握手时间的损耗，复用链接来进行通讯，是一个不错的尝试。</p>
+    <content type="html"><![CDATA[<p>众所周知，iOS 9.0之后苹果引入ATS限制，苹果也推荐尽量不要使用HTTP通讯了，毕竟是很不安全的。而国内各个有(wu)节操的运营商也会经常篡改请求HTTP请求。所以如果可能，在不影响性能的情况下，使用https总是更好一点。但是移动网络下HTTPS的握手耗时，也总是很让人难已接受。那么考虑整合Spdy来减少握手时间的损耗，复用链接来进行通讯，是一个不错的尝试。</p>
 
 <p>但对于老的app，尤其是本地已经存储了大量的老旧URL来说，尝试数据升级将本地数据库里的各种http转成https的操作也是令人发指的，尤其是这种操作很不适合做灰度测试发布。总不能数据改来改去，对于那些可能本地存了几万几十万条消息记录的app来说，简直是灾难。因此如何寻求在老的app上完成http的请求转https的请求，以及整合spdy来减少握手时间，提升弱网效果就显的很重要，而我们应该寻找优雅的解决方式来完成过渡。</p>
 
