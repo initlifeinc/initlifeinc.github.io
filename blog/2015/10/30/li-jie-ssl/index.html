@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>理解SSL,TLS和HTTPS - initlife&#8217;s Blog</title>
+  <meta name="author" content="initlife">
+
+  
+  <meta name="description" content="# TLS(Transport Layer Security Protocol)：安全传输层协议
+SSL运行在TCP/IP层之上、应用层之下 SSL SSL 安全套接字层. SSL介于应用层和TCP层之间。应用层数据不再直接传递给传输层，而是传递给SSL层，SSL层对从应用层收到的数据进行加密， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://initlifeinc.github.io/blog/2015/10/30/li-jie-ssl/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="initlife's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://cdn.staticfile.org/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+  
+
+</head>
+
+<body   >
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+
+<a href="/"><img src="/images/user.png" style="width:33px;height:33px;margin-top:-4px;float:left"/></a>
+<ul class="main-navigation">
+    <li><a href="/">
+
+        <span class="blue_light">
+            initlife&#8217;s Blog
+        </span>
+        
+           <span class="blue_dark">
+             ~ Thinking & Done.
+           </span>
+       
+    </a></li>
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">文章列表</a></li>
+  <li><a href="/about">关于</a></li>
+  <li><a href="http://app.initlife.com">我的项目√</a></li>
+</ul>
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">理解SSL,TLS和HTTPS</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-10-30T17:02:53+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:02 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h1>#</h1>
+
+<p>TLS(Transport Layer Security Protocol)：安全传输层协议
+SSL运行在TCP/IP层之上、应用层之下</p>
+
+<h2>SSL</h2>
+
+<p>SSL 安全套接字层. SSL介于应用层和TCP层之间。应用层数据不再直接传递给传输层，而是传递给SSL层，SSL层对从应用层收到的数据进行加密，并增加自己的SSL头。勉强可以划到传输层，</p>
+
+<p>在SSL中会</p>
+
+<pre><code>1. 使用密钥交换算法交换密钥；
+2. 使用密钥对数据进行加密；
+3. 使用散列算法对数据的完整性进行验证
+4. 使用数字证书证明自己的身份。
+</code></pre>
+
+<p>特性：</p>
+
+<pre><code>1. 保密安全：在握手协议中定义会话密钥后，所有的消息都是被加密传输的。
+2. 鉴别身份，可选的客户端认证，和强制的服务端认证。
+3. 防篡改的完整性，传输数据的数据完整性检查。
+</code></pre>
+
+<p>好了，下面开始介绍SSL协议。</p>
+
+<h2>SSL工作原理</h2>
+
+<p>分为记录协议，握手协议，警报协议。</p>
+
+<p>握手协议是在应用程序数据传输之前使用的，主要的目的是为了互相验证，协商加密算法和加密密钥等信息（用来保护SSL记录里的发送的数据的安全性）</p>
+
+<h3>握手协议包含一下三个字段</h3>
+
+<ol>
+<li>Type: 表示10种消息类型之一</li>
+<li>length：表示消息体长度字节数</li>
+<li>content：与消息相关的参数</li>
+</ol>
+
+
+<p><img src="http://files.jb51.net/file_images/article/201212/2012121714313635.png" alt="SSL握手协议字段" /></p>
+
+<h3>握手过程（4个阶段）</h3>
+
+<ol>
+<li>客户端向服务端发送Client Hello，携带信息有：协议版本号，客户端随机数Client Random A，客户端支持的加密方法列表</li>
+<li>服务端根据客户端支持的加密算法选择确认双方使用的加密方法，然后将这个加密方法信息，再带上数字证书（certificate），服务端随机数Server Random B,返回给客户端,最终发送Server Hello Done。（注意这里其实还有可选的进一步校验，比如如果服务端要求验证客户端更多的信息，可以发送certificate request，还有server key exchange。）</li>
+<li>客户端确认服务端返回的证书有效性，然后再根据AB两个随机数再生成一个新的随机数（Premaster Secret），然后使用证书中的公钥对这个Premaster Secret加密，发送给服务端。（注意，这里也可选的可以有一个server key exchange）</li>
+<li>服务端通过私钥解析出客户端生成的Premaster Secret，然后根据约定的加密方法，使用A,B,Premaster Secret三个随机数，来生成最终的&#8221;对话密钥&#8221;(Session Key), 用来加密接下来的整个会话过程里的数据了。</li>
+</ol>
+
+
+<p>用图来说明的话，如下：</p>
+
+<p><img src="http://image.beekka.com/blog/2014/bg2014092004.png" alt="SSL Handshake" /></p>
+
+<h3>Session的恢复</h3>
+
+<p>握手阶段用来建立SSL连接。如果出于某种原因，对话中断，就需要重新握手。
+这时有两种方法可以恢复原来的session：一种叫做session ID，另一种叫做session ticket。</p>
+
+<h1>TLS</h1>
+
+<p>TLS 握手协议提供的连接安全具有三个基本属性： <br/>
+可以使用非对称的，或公共密钥的密码术来认证对等方的身份。该认证是可选的，但至少需要一个结点方。
+共享加密密钥的协商是安全的。对偷窃者来说协商加密是难以获得的。此外经过认证过的连接不能获得加密，即使是进入连接中间的攻击者也不能。
+协商是可靠的。没有经过通信方成员的检测，任何攻击者都不能修改通信协商。</p>
+
+<p>TLS的最大优势就在于：TLS是独立于应用协议。高层协议可以透明地分布在TLS协议上面。然而， TLS 标准并没有规定应用程序如何在TLS上增加安全性；它把如何启动 TLS 握手协议以及如何解释交换的认证证书的决定权留给协议的设计者和实施者来判断。</p>
+
+<p>TLS记录协议是一种分层协议。每一层中的信息可能包含长度、描述和内容等字段。记录协议支持信息传输、将数据分段到可处理块、压缩数据、应用MAC 、加密以及传输结果等。对接收到的数据进行解密、校验、解压缩、重组等，然后将它们传送到高层客户机。
+参考链接：</p>
+
+<p>在TLS与SSL3.0之间存在着显著的差别，主要是它们所支持的加密算法不同，所以TLS与SSL3.0不能互操作。</p>
+
+<h3>TLS与SSL的差异</h3>
+
+<ol>
+<li><p>版本号：TLS记录格式与SSL记录格式相同，但版本号的值不同，TLS的版本1.0使用的版本号为SSLv3.1。</p></li>
+<li><p>报文鉴别码：SSLv3.0和TLS的MAC算法及MAC计算的范围不同。TLS使用了RFC-2104定义的HMAC算法。SSLv3.0使用了相似的算法，两者差别在于SSLv3.0中，填充字节与密钥之间采用的是连接运算，而HMAC算法采用的是异或运算。但是两者的安全程度是相同的。</p></li>
+<li><p>伪随机函数：TLS使用了称为PRF的伪随机函数来将密钥扩展成数据块，是更安全的方式。</p></li>
+<li><p>报警代码：TLS支持几乎所有的SSLv3.0报警代码，而且TLS还补充定义了很多报警代码，如解密失败(decryption_failed)、记录溢出（record_overflow）、未知CA（unknown_ca）、拒绝访问（access_denied）等。</p></li>
+<li>密文族和客户证书：SSLv3.0和TLS存在少量差别，即TLS不支持Fortezza密钥交换、加密算法和客户证书。</li>
+<li>certificate_verify和finished消息：SSLv3.0和TLS在用certificate_verify和finished消息计算MD5和SHA-1散列码时，计算的输入有少许差别，但安全性相当。</li>
+<li>加密计算：TLS与SSLv3.0在计算主密值（master secret）时采用的方式不同。</li>
+<li>填充：用户数据加密之前需要增加的填充字节。在SSL中，填充后的数据长度要达到密文块长度的最小整数倍。而在TLS中，填充后的数据长度可以是密文块长度的任意整数倍（但填充的最大长度为255字节），这种方式可以防止基于对报文长度进行分析的攻击。</li>
+</ol>
+
+
+<h3>HTTPS是什么</h3>
+
+<p>通常所说的 HTTPS 协议，说白了就是“HTTP 协议”和“SSL/TLS 协议”的组合。你可以把 HTTPS 大致理解为——“HTTP over SSL”或“HTTP over TLS”（反正 SSL 和 TLS 差不多）。</p>
+
+<h2>参考链接</h2>
+
+<ol>
+<li><a href="http://www.ruanyifeng.com/blog/2014/09/illustration-ssl.html">http://www.ruanyifeng.com/blog/2014/09/illustration-ssl.html</a></li>
+</ol>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">initlife</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-10-30T17:02:53+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:02 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+  
+     <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<a class="jiathis_button_tsina"></a>
+<a class="jiathis_button_weixin"></a>
+<a class="jiathis_button_copy"></a>
+<a href="http://www.jiathis.com/share?uid=2011867" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+var jiathis_config={
+	data_track_clickback:true,
+	summary:"",
+	shortUrl:false,
+	hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=2011867" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+
+<!-- UY BEGIN -->
+<div id="uyan_frame"></div>
+<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2011867"></script>
+<!-- UY END -->
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/10/28/iosli-de-zhan-xian-zhi-yin-fa-de-crash/" title="Previous Post: iOS里的栈限制引发的crash">&laquo; iOS里的栈限制引发的crash</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/10/30/li-jie-ssl/">理解SSL,TLS和HTTPS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/28/iosli-de-zhan-xian-zhi-yin-fa-de-crash/">iOS里的栈限制引发的crash</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu/">通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/23/ios9gua-pei/">iOS9适配</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/">一个pod Update遇到的错误处理</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/initlifeinc">@initlifeinc</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'initlifeinc',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section> 
+  <h1>文章分类</h1> 
+  <ul id="categories"> 
+    <li class='category'><a href='/blog/categories/bitbucket/'>bitbucket (1)</a></li>
+<li class='category'><a href='/blog/categories/cocoapods/'>cocoapods (1)</a></li>
+<li class='category'><a href='/blog/categories/git/'>git (1)</a></li>
+<li class='category'><a href='/blog/categories/git-/'>git, (1)</a></li>
+<li class='category'><a href='/blog/categories/ios/'>ios (2)</a></li>
+<li class='category'><a href='/blog/categories/ios-/'>ios, (1)</a></li>
+ 
+  </ul> 
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - initlife -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?3e946bafe925707f25748d4e77a8b1de";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
