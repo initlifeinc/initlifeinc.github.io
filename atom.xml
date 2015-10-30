@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-10-30T17:06:57+08:00</updated>
+  <updated>2015-10-30T17:08:26+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -18,9 +18,7 @@
     <link href="http://initlifeinc.github.io/blog/2015/10/30/li-jie-ssl/"/>
     <updated>2015-10-30T17:02:53+08:00</updated>
     <id>http://initlifeinc.github.io/blog/2015/10/30/li-jie-ssl</id>
-    <content type="html"><![CDATA[<h1>#</h1>
-
-<p>TLS(Transport Layer Security Protocol)：安全传输层协议
+    <content type="html"><![CDATA[<p>TLS(Transport Layer Security Protocol)：安全传输层协议
 SSL运行在TCP/IP层之上、应用层之下</p>
 
 <h2>SSL</h2>
