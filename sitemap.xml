@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://initlifeinc.github.io/blog/2015/11/09/cloudkitfang-wen-quan-xian/</loc>
+    <lastmod>2015-11-09T10:18:27+08:00</lastmod>
+  </url>
+  <url>
     <loc>http://initlifeinc.github.io/blog/2015/10/30/li-jie-ssl/</loc>
     <lastmod>2015-10-30T17:02:53+08:00</lastmod>
   </url>
@@ -34,14 +38,14 @@
   </url>
   <url>
     <loc>http://initlifeinc.github.io/blog/archives/</loc>
-    <lastmod>2015-10-30T17:39:23+08:00</lastmod>
+    <lastmod>2015-11-09T10:19:31+08:00</lastmod>
   </url>
   <url>
     <loc>http://initlifeinc.github.io/</loc>
-    <lastmod>2015-10-30T17:39:23+08:00</lastmod>
+    <lastmod>2015-11-09T10:19:31+08:00</lastmod>
   </url>
   <url>
     <loc>http://initlifeinc.github.io/about/</loc>
-    <lastmod>2015-10-30T17:39:23+08:00</lastmod>
+    <lastmod>2015-11-09T10:19:31+08:00</lastmod>
   </url>
 </urlset>

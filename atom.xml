@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-10-30T17:39:23+08:00</updated>
+  <updated>2015-11-09T10:19:31+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,54 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[CloudKit访问权限]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/11/09/cloudkitfang-wen-quan-xian/"/>
+    <updated>2015-11-09T10:18:27+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/11/09/cloudkitfang-wen-quan-xian</id>
+    <content type="html"><![CDATA[<p>CloudKit在使用的时候就和通讯录，照片等访问一样，都需要用户类似授权的行为，当然CloudKit略有不通，它需要用户的设备的OS版本至少8.0一样，然后用户还需要设置自己的iCloud账号，而且还必须在设置里不关闭app对iCloud Drive的访问（开关路径为：设置->iCloud->iCloud Drive），否则用户可能出现完全无法访问iCloud或者可能读数据，而无法保存或者更新数据。</p>
+
+<p>那么iCloud的登陆状态，开关等的状态的设置会在app里有什么样的返回结果呢？</p>
+
+<h2>测试结果</h2>
+
+<table>
+<thead>
+<tr>
+<th> 场景 </th>
+<th> CKAccountStatus状态 </th>
+<th> CKApplicationPermissionStatus值 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> 关闭iCloud，完全不登陆iCloud账号</td>
+<td> NoAccount </td>
+<td> CouldNotComplete </td>
+</tr>
+<tr>
+<td> 登陆iCloud，关闭iCloud Drive </td>
+<td> NoAccount </td>
+<td> CouldNotComplete </td>
+</tr>
+<tr>
+<td> 登陆iCloud，打开iCloud Drive，关闭app的访问权限 </td>
+<td> NoAccount </td>
+<td> CouldNotComplete </td>
+</tr>
+<tr>
+<td> 全打开 </td>
+<td> Available </td>
+<td> CouldNotComplete </td>
+</tr>
+</tbody>
+</table>
+
+
+<p>实际上CKApplicationPermissionStatus的授权需要调用requestApplicationPermission:completion:，当用户完成授权后，这里的CKApplicationPermissionStatus会变为CKApplicationPermissionStatusGranted。而这个授权是为了特殊的一些权限，主要是通过email能看到应用。具体没深入了解</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[理解SSL,TLS和HTTPS]]></title>
@@ -107,9 +155,60 @@
 </ol>
 
 
+<h3>TLS 的最大优势</h3>
+
+<p>TLS 的最大优势就在于：TLS 是独立于应用协议。高层协议可以透明地分布在 TLS 协议上面。然而，TLS 标准并没有规定应用程序如何在 TLS 上增加安全性；它把如何启动 TLS 握手协议以及如何解释交换的认证证书的决定权留给协议的设计者和实施者来判断。
+TLS包含三个基本阶段：
+1.对等协商支援的密钥算法
+2.基于私钥加密交换公钥、基于PKI证书的身份认证
+3.基于公钥加密的数据传输保密</p>
+
 <h3>HTTPS是什么</h3>
 
 <p>通常所说的 HTTPS 协议，说白了就是“HTTP 协议”和“SSL/TLS 协议”的组合。你可以把 HTTPS 大致理解为——“HTTP over SSL”或“HTTP over TLS”（反正 SSL 和 TLS 差不多）。</p>
+
+<h2>加解密</h2>
+
+<h3>对称加密</h3>
+
+<ul>
+<li>对称加密指的是可以使用同一个密钥对内容进行加密和解密。相比非对称加密，它的特点是加、解密速度快，并且加密的内容长度几乎没有限制，简单的表达式就是</li>
+</ul>
+
+
+<p>发送者加密信息：encrypted_message = func1(message, key)，</p>
+
+<p>接收者解密信息：message = func2(encrypted_message, key)</p>
+
+<p>其中根据不同的算法，func1有可能会等于func2，也有可能不同。
+IC168364</p>
+
+<ul>
+<li><p>现在常用的对称密钥主要分成两种，块式加密和流式加密，他们的基本思想都是对信息进行XOR、移位等操作来进行加密的。在操作方式上块式加密是把message分成多个固定长度的组，每组包含多个字节，每次操作的时候会针对一组字节进行操作，鼎鼎大名的DES和AES就是采用这类方式。而流式加密是每次只针对一个字节进行操作，鼎鼎大名的RC4就是采用这种方式。</p></li>
+<li><p>DES的原理</p>
+
+<ul>
+<li>我们将需要加密的消息分成长度为64bits的一堆block，对每个block通过XOR、移位等等方式进行加密，DES的密钥(key)长度是64bits，有效长度是56bits，因为其中的8个bits用于校验。另外DES有一个特点就是对于同一个block，如果使用同一个密钥(key)，加密出来的结果是相同的，换句话说攻击者可以通过寻找同样的密文block来推理出原文，这就是我们常说的回放攻击。</li>
+<li>为了解决回放攻击的问题，最简单的方式就是CBC(cipher block chaining)，简单说来就是每次加密一个block之后，把它和前一个block的密文进行XOR操作，作为这个block的密文，这样即便是同样的block，每次加密的结果也会不一样，攻击者就无法通过密文猜测原文了。另外第一个block因为在它之前没有其他block了，所以我们需要生成一个随机的64bit的intialization vector(类似我们在写程序对用户密码加密的时候搞的salt)给第一个block进行XOR操作。 601px_CBC_encryption_svg</li>
+<li>3DES是在DES的基础上将密钥扩充为原来的3倍也就是192bits(实际有效密钥长度是56bits*3=168bits)，3DES的加密过程其实就是将密钥分成三份，使用第一份密钥加密、第二份密钥解密、第三份密钥加密，然后解密的话刚好相反，使用第三份密钥解密，第二份密钥加密和第一份密钥解密，通过这种方式去扩展DES的加密长度问题，3DES更加安全，也能抵挡之前说的回放攻击。</li>
+</ul>
+</li>
+<li><p>AES的原理</p>
+
+<ul>
+<li>3DES虽然很安全，但是因为多次的加解密导致性能其实很低的，所以数学家们希望在同样的密钥长度下使用更高效率的算法，于是有了AES。</li>
+<li>AES允许密钥长度为128-bit，192-bit和256-bit，当前来说使用128-bit已经足够安全，并且性能比3DES快很多，所以现在使用最多的对称加密就是AES。</li>
+</ul>
+</li>
+<li><p>RC4的原理</p>
+
+<ul>
+<li>如果把block的size变成了1 byte那么就变成了stream加密算法，当然具体的实现肯定不一样，block式加密主要是将block里面的每个bit进行移位，而stream加密是生成同样长度的、安全的字符串，然后再和原文进行XOR生成最终的密文，所以stream的安全性主要取决于这个安全字符串的生成算法，同样因为RC4安全性取决于安全字符串的生成，所以它不需要CBC或者IV。
+<strong> 总的来说对称加密性能高、速度快，但是它的前提是必须双方都知道这个共同的密钥，而这个密钥又不可以被第三方知道，否则他们也是可以解密密文。为了解决密钥传输的问题，数学家又发明了非对称加密的算法，相比而言，非对称加密解决了密钥本身的安全传输问题，但是他的性能相比对称加密来说相差几万倍，而且对所加密的内容也有长度的限制。</strong></li>
+</ul>
+</li>
+</ul>
+
 
 <h2>参考链接</h2>
 

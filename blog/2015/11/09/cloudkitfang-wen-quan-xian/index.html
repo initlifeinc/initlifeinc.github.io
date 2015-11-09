@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Bitbucket - initlife&#8217;s Blog</title>
+  <title>CloudKit访问权限 - initlife&#8217;s Blog</title>
   <meta name="author" content="initlife">
 
   
-  <meta name="description" content="完美的私人仓库 一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。 果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去 &hellip;">
+  <meta name="description" content="CloudKit在使用的时候就和通讯录，照片等访问一样，都需要用户类似授权的行为，当然CloudKit略有不通，它需要用户的设备的OS版本至少8.0一样，然后用户还需要设置自己的iCloud账号，而且还必须在设置里不关闭app对iCloud Drive的访问（开关路径为：设置->iCloud-> &hellip;&#8221;>
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://initlifeinc.github.io/blog/2015/08/18/bitbucket/">
+  <link rel="canonical" href="http://initlifeinc.github.io/blog/2015/11/09/cloudkitfang-wen-quan-xian/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="initlife's Blog" type="application/atom+xml">
@@ -64,7 +64,7 @@
   
   <header>
     
-      <h1 class="entry-title">Bitbucket</h1>
+      <h1 class="entry-title">CloudKit访问权限</h1>
     
     
       <p class="meta">
@@ -73,42 +73,53 @@
 
 
 
-<time class='entry-date' datetime='2015-08-18T11:07:27+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
+<time class='entry-date' datetime='2015-11-09T10:18:27+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:18 am</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><h1>完美的私人仓库</h1>
+<div class="entry-content"><p>CloudKit在使用的时候就和通讯录，照片等访问一样，都需要用户类似授权的行为，当然CloudKit略有不通，它需要用户的设备的OS版本至少8.0一样，然后用户还需要设置自己的iCloud账号，而且还必须在设置里不关闭app对iCloud Drive的访问（开关路径为：设置->iCloud->iCloud Drive），否则用户可能出现完全无法访问iCloud或者可能读数据，而无法保存或者更新数据。</p>
 
-<p>一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。</p>
+<p>那么iCloud的登陆状态，开关等的状态的设置会在app里有什么样的返回结果呢？</p>
 
-<p>果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去。
-中间碰到了一些问题，以为类似github上的ssh key的添加，结果添加ssh key到repo里的一个deployment key去了（这个应该是用来专门部署的时候用的key，只读性质的）。
-查了下，发现overflow上有人说明了原因，果断尝试了OK解决问题，看客们自己也试试吧，值得推荐！</p>
+<h2>测试结果</h2>
 
-<p><a href="http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843">http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843</a></p>
+<table>
+<thead>
+<tr>
+<th> 场景 </th>
+<th> CKAccountStatus状态 </th>
+<th> CKApplicationPermissionStatus值 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> 关闭iCloud，完全不登陆iCloud账号</td>
+<td> NoAccount </td>
+<td> CouldNotComplete </td>
+</tr>
+<tr>
+<td> 登陆iCloud，关闭iCloud Drive </td>
+<td> NoAccount </td>
+<td> CouldNotComplete </td>
+</tr>
+<tr>
+<td> 登陆iCloud，打开iCloud Drive，关闭app的访问权限 </td>
+<td> NoAccount </td>
+<td> CouldNotComplete </td>
+</tr>
+<tr>
+<td> 全打开 </td>
+<td> Available </td>
+<td> CouldNotComplete </td>
+</tr>
+</tbody>
+</table>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>First confusion on my side was about where exactly to set SSH Keys in BitBucket.
-</span><span class='line'>
-</span><span class='line'>I am new to BitBucket and I was setting a Deployment Key which gives read-access only.
-</span><span class='line'>
-</span><span class='line'>So make sure you are setting your rsa pub key in your BitBucket Account Settings.
-</span><span class='line'>
-</span><span class='line'>Click your BitBucket avatar and select Manage account. There you'll be able to set SSH Keys.
-</span><span class='line'>
-</span><span class='line'>I simply deleted the Deployment Key, I don't need any for now. And it worked</span></code></pre></td></tr></table></div></figure>
 
+<p>实际上CKApplicationPermissionStatus的授权需要调用requestApplicationPermission:completion:，当用户完成授权后，这里的CKApplicationPermissionStatus会变为CKApplicationPermissionStatusGranted。而这个授权是为了特殊的一些权限，主要是通过email能看到应用。具体没深入了解</p>
 </div>
 
 
@@ -124,14 +135,8 @@
 
 
 
-<time class='entry-date' datetime='2015-08-18T11:07:27+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
+<time class='entry-date' datetime='2015-11-09T10:18:27+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:18 am</span></time>
       
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/bitbucket/'>bitbucket</a>, <a class='category' href='/blog/categories/git/'>git,</a>
-  
-</span>
 
 
     </p>
@@ -171,10 +176,8 @@ var jiathis_config={
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/06/30/fa-bu-zi-ji-de-githubshang-de-cocoapods-podku/" title="Previous Post: 发布自己的github上的cocoaPods pod库">&laquo; 发布自己的github上的cocoaPods pod库</a>
+        <a class="basic-alignment left" href="/blog/2015/10/30/li-jie-ssl/" title="Previous Post: 理解SSL,TLS和HTTPS">&laquo; 理解SSL,TLS和HTTPS</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/" title="Next Post: 一个pod update遇到的错误处理">一个pod update遇到的错误处理 &raquo;</a>
       
     </p>
   </footer>
