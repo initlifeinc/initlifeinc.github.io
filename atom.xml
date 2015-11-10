@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-11-09T10:19:31+08:00</updated>
+  <updated>2015-11-10T15:06:16+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,335 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Runtime Programming Guide再次研究]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/11/10/runtime-programming-guide/"/>
+    <updated>2015-11-10T15:04:35+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/11/10/runtime-programming-guide</id>
+    <content type="html"><![CDATA[<p>这次准备好好研究下runtime programming， 先从encodings开始了解，这个对于理解oc的类也是很有帮助的。
+废话不多说直接开始。</p>
+
+<h2>Type Encodings</h2>
+
+<p>compiler 编码encode 每个method的返回值，参数类型，将这些信息保存在一个字符串里。然后将这个string和selector关联起来。</p>
+
+<p>这套编码也适用于其他场景，所以这个@encode编译器指令是设计成公开的。当给定一个type的规范声明，@encode()返回相对应的字符串类型编码值。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>char *buf1 = @encode(int **);
+</span><span class='line'>char *buf2 = @encode(struct key);
+</span><span class='line'>char *buf3 = @encode(Rectangle);</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/typeencodings.png" alt="type encodings" />
+更多的类型可以查看<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html#//apple_ref/doc/uid/TP40008048-CH100-SW1">https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html#//apple_ref/doc/uid/TP40008048-CH100-SW1</a></p>
+
+<p>数组的type code是一个中括号里面，然后紧接着一个数组个数值和相对应的数组元素的类型，如一个包含12个float指针的数组的编码为：<code>[12^f]</code></p>
+
+<p>structures 是一个大括号里，里面是显示紧跟着structure tag（struct的结构名称）然后一个等号（equal sign）=，接着就是struct里各个类型排列在一起，比如</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>typedef struct example {
+</span><span class='line'>    id   anObject;
+</span><span class='line'>    char *aString;
+</span><span class='line'>    int  anInt;
+</span><span class='line'>} Example;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>的type code值为 <code>{example=@*i}</code>, 如果是一个结构体的指针，那么encode为<code>^{example=@*i}</code>,如果是一个结构体的指针的指针，则是<code>^^{example}</code>.</p>
+
+<p>Objects对象也被看成一个struct。@encode(NSObject)结果是<code>{NSObject=#}</code>, 因为NSObject class里就一个isa（class 类型）的变量。</p>
+
+<p>尽管 @encode()不直接返回数据, 但运行时会使用额外的一个encoding列表来表示一些方法声明的后缀修饰符.</p>
+
+<table>
+<thead>
+<tr>
+<th> code </th>
+<th> Meaning </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> r </td>
+<td> const </td>
+</tr>
+<tr>
+<td> i </td>
+<td> int </td>
+</tr>
+<tr>
+<td> N </td>
+<td> inout </td>
+</tr>
+<tr>
+<td> o </td>
+<td> out </td>
+</tr>
+<tr>
+<td> O </td>
+<td> bycopy </td>
+</tr>
+<tr>
+<td> R </td>
+<td> byref </td>
+</tr>
+<tr>
+<td> V </td>
+<td> oneway </td>
+</tr>
+</tbody>
+</table>
+
+
+<h2>Declared Propertyies</h2>
+
+<p>当编译器碰到property声明时，它会生成描述性的带有关于class， category或者protocol的metadata元数据。</p>
+
+<p>你能通过一些列的api函数来访问这个metadata，通过class，protocol上的name来查找property。可以通过@encode来获取property的encode string。可以copy property的attributes list（C strings）。</p>
+
+<p>class和protocol都有一个properties list的值。</p>
+
+<h3>property type and functions</h3>
+
+<p>可以通过class_copyPropertyList和protocol_copyPropertyList来遍历class（包括loaded categories）和protocol的property list</p>
+
+<p>通过property_getAttributes可以获取到一个property属性的@encode type的值。</p>
+
+<p>比如一个@property (nonatomic, strong) NSString *login;的property @encode值为<code>T@"NSString",&amp;,N,V_login</code></p>
+
+<p>每个逗号都是分割一个属性attribute，实际上当你获取到<code>objc_property_attribute_t *attrs = property_copyAttributeList(prot, &amp;outcount);（注意你还需要主动free掉attrs）</code> outcount的值就是分割后的数组的个数。</p>
+
+<p>attrs分别为：</p>
+
+<table>
+<thead>
+<tr>
+<th> property index </th>
+<th> name </th>
+<th> value </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> 0 </td>
+<td> T </td>
+<td> @&ldquo;NSString&rdquo;   </td>
+</tr>
+<tr>
+<td> 1 </td>
+<td> &amp; </td>
+<td>               </td>
+</tr>
+<tr>
+<td> 2 </td>
+<td> N </td>
+<td>               </td>
+</tr>
+<tr>
+<td> 3 </td>
+<td> V </td>
+<td> _login        </td>
+</tr>
+</tbody>
+</table>
+
+
+<h3>Property type string</h3>
+
+<p>文档里面有一段英文很重要，他描述了property type的string值的格式（这个值可以通过@encode或者通过property_getAttributes来获取）。</p>
+
+<p>You can use the property_getAttributes function to discover the name, the @encode type string of a property, and other attributes of the property.</p>
+
+<p>The string starts with a T followed by the @encode type and a comma, and
+finishes with a V followed by the name of the backing instance variable.
+Between these, the attributes are specified by the following descriptors, separated by commas:</p>
+
+<p><strong><em> 这段英文很重要，说明了格式，首先是以一个T开头的，然后@encode type加一个逗号，以一个V后面带上存储支持的实例变量，然后在中间，每个attributes都是以逗号隔开的，这些attributes描述如下：</em></strong></p>
+
+<p>可以官场上面的那个例子<code>@property (nonatomic, strong) NSString *login;的property @encode值为T@"NSString",&amp;,N,V_login</code></p>
+
+<p>Table 7-1 Declared property type encodings</p>
+
+<table>
+<thead>
+<tr>
+<th> Code  </th>
+<th> Meaning </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> R </td>
+<td> The property is read-only (readonly). </td>
+</tr>
+<tr>
+<td> C </td>
+<td> The property is a copy of the value last assigned (copy).</td>
+</tr>
+<tr>
+<td> &amp; </td>
+<td> The property is a reference to the value last assigned (retain). </td>
+</tr>
+<tr>
+<td> N </td>
+<td> The property is non-atomic (nonatomic). </td>
+</tr>
+<tr>
+<td> G<name> </td>
+<td> The property defines a custom getter selector name. The name follows the G (for example, GcustomGetter,). </td>
+</tr>
+<tr>
+<td> S<name> </td>
+<td> The property defines a custom setter selector name. The name follows the S (for example, ScustomSetter:,) </td>
+</tr>
+<tr>
+<td> D </td>
+<td> The property is dynamic (@dynamic). </td>
+</tr>
+<tr>
+<td> W </td>
+<td> The property is a weak reference (__weak). </td>
+</tr>
+<tr>
+<td> P </td>
+<td> The property is eligible for garbage collection. </td>
+</tr>
+<tr>
+<td> t<encoding> </td>
+<td> Specifies the type using old-style encoding. </td>
+</tr>
+</tbody>
+</table>
+
+
+<p>这个链接里有相关的demo示例说明property declaration声明和描述description。
+<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html#//apple_ref/doc/uid/TP40008048-CH101-SW5">https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html#//apple_ref/doc/uid/TP40008048-CH101-SW5</a></p>
+
+<p>这里只罗列少数几个：</p>
+
+<table>
+<thead>
+<tr>
+<th> property declaration </th>
+<th> description </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> @property(getter=intGetFoo, setter=intSetFoo:) int intSetterGetter; </td>
+<td> Ti,GintGetFoo,SintSetFoo:,V_intSetterGetter </td>
+</tr>
+<tr>
+<td> @property int intSynthEquals;In the implementation block:@synthesize intSynthEquals=_intSynthEquals; </td>
+<td> Ti,V_intSynthEquals </td>
+</tr>
+<tr>
+<td> @property int (*functionPointerDefault)(char *); </td>
+<td>  T^?,V_functionPointerDefault </td>
+</tr>
+<tr>
+<td> @property (strong, atomic) NSString * dataObject;  </td>
+<td> T@&ldquo;NSString&rdquo;,&amp;,V_dataObject </td>
+</tr>
+</tbody>
+</table>
+
+
+<h3>function/method type encode</h3>
+
+<p>先看例子：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>//- (void)viewWillAppear:(BOOL)animated  -&gt; v20@0:8B16
+</span><span class='line'>NSLog(@"%s", class_getInstanceMethod([self class], @selector(viewWillAppear:)));
+</span><span class='line'>//- (void) setSomething:(id) anObject  -&gt; v24@0:8@16
+</span><span class='line'>NSLog(@"%s", method_getTypeEncoding(class_getInstanceMethod([self class], @selector(setSomething:))));
+</span><span class='line'>//- (BOOL) setSomething:(UInt8)animated aa:(id)anObject  -&gt; B28@0:8C16@20
+</span><span class='line'>NSLog(@"%s", method_getTypeEncoding(class_getInstanceMethod([self class], @selector(setSomething:aa:))));
+</span><span class='line'>//- (BOOL) setSomething:(UInt16)animated aa:(id)anObject  -&gt; B28@0:8s16@20
+</span><span class='line'>NSLog(@"%s", method_getTypeEncoding(class_getInstanceMethod([self class], @selector(setSomething:aa:))));
+</span><span class='line'>//- (BOOL) setSomething:(int)animated aa:(id)anObject  -&gt; B28@0:8i16@20
+</span><span class='line'>NSLog(@"%s", method_getTypeEncoding(class_getInstanceMethod([self class], @selector(setSomething:aa:))));
+</span><span class='line'>//- (BOOL) setSomething:(long)animated aa:(id)anObject-&gt; B32@0:8q16@24
+</span><span class='line'>NSLog(@"%s", method_getTypeEncoding(class_getInstanceMethod([self class], @selector(setSomething:aa:))));
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>typedef struct  {
+</span><span class='line'>    uint32_t a;
+</span><span class='line'>    uint16_t b;
+</span><span class='line'>    uint8_t c;
+</span><span class='line'>} __attribute__((packed)) MyStruct;
+</span><span class='line'>// - (void)strutMethod:(MyStruct)aa  -&gt; v23@0:8{?=ISC}16
+</span><span class='line'>NSLog(@"%s", method_getTypeEncoding(class_getInstanceMethod([self class], @selector(strutMethod:))));</span></code></pre></td></tr></table></div></figure>
+
+
+<p>那么如何理解呢？</p>
+
+<ul>
+<li>v means void return type</li>
+<li>20 means the size of the argument frame (20 bytes)，整个方法参数占位的总长度</li>
+<li>@0 means that there is an Objective-C object type at byte offset 0 of the argument frame (this is the implicit self object in each Objective-C method)，这个表示在offset为0的地方有一个objective-c的对象，在objective-c method里，首个对象是self自身。</li>
+<li>:8 means that there is a selector at byte offset 8 (this is the implicit _cmd in every method, which is the selector that was used to invoke the method). 在offset为8的地方有一个SEL，由于我测试的是64位机器上，所以之前的OC的对象指针占位8个字节。</li>
+<li>B16 means 在offset 16的地方，有一个bool类型的参数，由于oc的对象和sel都是指针类型，64位机下所以都是占位8位，这里的bool也就出现在offset16的地方了。<strong><em>至于为什么bool参数占位了4个字节。主要原因是内存对齐的原因</em></strong></li>
+</ul>
+
+
+<p><strong><em>从上面看起来，不管是bool，uint8，uint16，int都被认为4个字节。因为他们的内存实际占位都小于4个字节，由于内存对齐原因所以实际最后占位为4字节。这里当你看最后一个MyStruct就可以看出，当主动告诉编译器取消结构体的内存对齐，就发现最后一个参数事迹展位是7（4+2+1）个字节</em></strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>注：packed属性：使用该属性可以使得变量或者结构体成员使用最小的对齐方式，即对变量是一字节对齐，对域（field）是位对齐.
+</span><span class='line'>typedef struct  {
+</span><span class='line'>    uint32_t a;
+</span><span class='line'>    uint16_t b;
+</span><span class='line'>    uint8_t c;
+</span><span class='line'>} __attribute__((packed)) MyStruct;</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>未完待续</h2>
+
+<p>至此先了解介绍完了关于type encodings， property type encodings，method encodings。稍后继续补充了解更多的运行时编程相关的知识点，runtime programming guide~~~.</p>
+
+<h2>参考链接</h2>
+
+<ol>
+<li><a href="http://lists.cs.uiuc.edu/pipermail/cfe-dev/2014-April/036654.html">http://lists.cs.uiuc.edu/pipermail/cfe-dev/2014-April/036654.html</a></li>
+</ol>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[CloudKit访问权限]]></title>
