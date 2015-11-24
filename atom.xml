@@ -4,7 +4,7 @@
   <title><![CDATA[initlife's Blog]]></title>
   <link href="http://initlifeinc.github.io/atom.xml" rel="self"/>
   <link href="http://initlifeinc.github.io/"/>
-  <updated>2015-11-10T15:06:16+08:00</updated>
+  <updated>2015-11-24T10:24:22+08:00</updated>
   <id>http://initlifeinc.github.io/</id>
   <author>
     <name><![CDATA[initlife]]></name>
@@ -12,6 +12,27 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[关于字符串计算size的方法比较]]></title>
+    <link href="http://initlifeinc.github.io/blog/2015/11/24/about-nsstring-size-calculate-methods/"/>
+    <updated>2015-11-24T10:23:31+08:00</updated>
+    <id>http://initlifeinc.github.io/blog/2015/11/24/about-nsstring-size-calculate-methods</id>
+    <content type="html"><![CDATA[<p>往往字符串需要计算size来满足UI排版的自适应的需要，而一般字符串也是放在UILabel里的。
+而在计算size的方法里，一般有两种方式（deprecated的就不说了）。</p>
+
+<p>NSString的方法 boundingRectWithSize:optoins:attributes:context: 和 UILabel的textRectForBounds:limitedToNumberOfLines 两个方法，那么计算结果有差距吗？我测试了下
+，如下图，结果误差不大，基本可以直接用来赋值label的长宽。</p>
+
+<p>测试代码</p>
+
+<p><img src="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/lALOA3F0ZM0BLM0DtQ_949_300.png" alt="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/lALOA3F0ZM0BLM0DtQ_949_300.png" /></p>
+
+<p>测试结果</p>
+
+<p><img src="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/lALOA3F0Y8yGzQIL_523_134.png" alt="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/lALOA3F0Y8yGzQIL_523_134.png" /></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Runtime Programming Guide再次研究]]></title>
@@ -447,7 +468,8 @@ Between these, the attributes are specified by the following descriptors, separa
 </ol>
 
 
-<p>用图来说明的话，如下：</p>
+<p>这里A,B都是不安全的，生成session key的方法是公开的，关键的key在于premaster secret，这个被认为最具有随机性的一个key，通过A+B+PremasterKey生成session key的公开算法，就得到了最后的秘钥了。
+用图来说明的话，如下：</p>
 
 <p><img src="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/bg2014092004.png" alt="SSL Handshake" /></p>
 

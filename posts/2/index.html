@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Bitbucket - initlife&#8217;s Blog</title>
+  <title>initlife&#8217;s Blog</title>
   <meta name="author" content="initlife">
 
   
-  <meta name="description" content="完美的私人仓库 一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。 果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去 &hellip;">
+  <meta name="description" content="git使用及github git 和github越来越多人使用，作为一个程序员，应该懂的怎么去用，而我就是个不怎么会用的人，所以我的主管在我刚开始上班的时候就要我去熟悉git那套东西。 当时我依然不是很懂，但最近开始迷糊的懂了，下面是我这段时间的心得。 创建ssh从而能免登访问github。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://initlifeinc.github.io/blog/2015/08/18/bitbucket/">
+  <link rel="canonical" href="http://initlifeinc.github.io/posts/2/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="initlife's Blog" type="application/atom+xml">
@@ -59,12 +59,15 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div>
-<article class="hentry" role="article">
+      <div class="blog-index">
   
+  
+  
+    <article>
+      
   <header>
     
-      <h1 class="entry-title">Bitbucket</h1>
+      <h1 class="entry-title"><a href="/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/">Git及github使用，github多账号免登</a></h1>
     
     
       <p class="meta">
@@ -73,22 +76,26 @@
 
 
 
-<time class='entry-date' datetime='2015-08-18T11:07:27+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
+<time class='entry-date' datetime='2015-03-05T12:34:00+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:34 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><h1>完美的私人仓库</h1>
+  <div class="entry-content"><h1>git使用及github</h1>
 
-<p>一直想弄个私人仓库，最好无限制创建私人仓库。最好还能有个team可以共享访问私人仓库。本来差点就要去自己搭建一个gitlab了，然后突然看到bitbucket，发现原来完美的私人仓库就是他了。</p>
+<p>git 和github越来越多人使用，作为一个程序员，应该懂的怎么去用，而我就是个不怎么会用的人，所以我的主管在我刚开始上班的时候就要我去熟悉git那套东西。</p>
 
-<p>果断申请账号（必须是免费的5人组team形势的），然后折腾一番将自己的一些小代码放上去。
-中间碰到了一些问题，以为类似github上的ssh key的添加，结果添加ssh key到repo里的一个deployment key去了（这个应该是用来专门部署的时候用的key，只读性质的）。
-查了下，发现overflow上有人说明了原因，果断尝试了OK解决问题，看客们自己也试试吧，值得推荐！</p>
+<p>当时我依然不是很懂，但最近开始迷糊的懂了，下面是我这段时间的心得。</p>
 
-<p><a href="http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843">http://stackoverflow.com/questions/13306435/repository-access-denied-access-via-a-deployment-key-is-read-only/13309843#13309843</a></p>
+<h2>创建ssh从而能免登访问github。</h2>
+
+<p>命令<code>ssh-keygen</code>去创建公钥私钥，如果你只希望访问一个服务器的话，比如github，那么你就放到默认的目录下，并且使用默认的私钥和公钥文件路径，即~/.ssh/id_rsa和~/.ssh/id_rsa.pub，其中id_rsa.pub是公钥文件。我们需要将这个文件里的数据复制并粘贴到github上的ssh key里。从而通过ssh就可以面等访问github了。</p>
+
+<p>   如果你有多个服务器需要访问，比如我们还需要访问gitlab，那么，这个时候，需要~/.ssh/config文件里的配置来区分服务器和ssh秘钥。(记得添加rsa 命令：ssh-add ~/.ssh/your_rsa)</p>
+
+<p>   比如我自己的配置为</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -99,89 +106,38 @@
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>First confusion on my side was about where exactly to set SSH Keys in BitBucket.
-</span><span class='line'>
-</span><span class='line'>I am new to BitBucket and I was setting a Deployment Key which gives read-access only.
-</span><span class='line'>
-</span><span class='line'>So make sure you are setting your rsa pub key in your BitBucket Account Settings.
-</span><span class='line'>
-</span><span class='line'>Click your BitBucket avatar and select Manage account. There you'll be able to set SSH Keys.
-</span><span class='line'>
-</span><span class='line'>I simply deleted the Deployment Key, I don't need any for now. And it worked</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Host github.com
+</span><span class='line'>  HostName github.com
+</span><span class='line'>  User taoxiaoseng@gmail.com
+</span><span class='line'>  IdentityFile /Users/Dick/.ssh/github_taoxiaoseng_rsa
+</span><span class='line'>  
+</span><span class='line'>Host gitlab.alibaba-inc.com
+</span><span class='line'>  HostName gitlab.alibaba-inc.com
+</span><span class='line'>  User guodi.ggd@taobao.com
+</span><span class='line'>  IdentityFile /Users/Dick/.ssh/gitlab_rsa</span></code></pre></td></tr></table></div></figure>
+
+
+<p>也就是说访问github用文件github_taoxiaoseng_rsa，访问gitlab用gitlab_rsa。注意公钥也需要上传到相应的服务器里。</p>
 
 </div>
-
-
-  <footer>
-    <p class="meta">
-      
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/03/05/gitji-githubshi-yong-,githubduo-zhang-hao-mian-deng/">Read on &rarr;</a>
+    </footer>
   
 
-<span class="byline author vcard">Posted by <span class="fn">initlife</span></span>
 
-      
-
-
-
-
-<time class='entry-date' datetime='2015-08-18T11:07:27+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:07 am</span></time>
-      
-
-<span class="categories">
+    </article>
   
-    <a class='category' href='/blog/categories/bitbucket/'>bitbucket</a>, <a class='category' href='/blog/categories/git/'>git,</a>
-  
-</span>
-
-
-    </p>
+  <div class="pagination">
     
-      <div class="sharing">
-  
-  
-  
-  
-     <!-- JiaThis Button BEGIN -->
-<div class="jiathis_style">
-<a class="jiathis_button_tsina"></a>
-<a class="jiathis_button_weixin"></a>
-<a class="jiathis_button_copy"></a>
-<a href="http://www.jiathis.com/share?uid=2011867" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
-<a class="jiathis_counter_style"></a>
-</div>
-<script type="text/javascript" >
-var jiathis_config={
-	data_track_clickback:true,
-	summary:"",
-	shortUrl:false,
-	hideMore:false
-}
-</script>
-<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=2011867" charset="utf-8"></script>
-<!-- JiaThis Button END -->
-
-
-<!-- UY BEGIN -->
-<div id="uyan_frame"></div>
-<script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2011867"></script>
-<!-- UY END -->
-  
-</div>
-
+    <a href="/blog/archives">Blog Archives</a>
     
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/blog/2015/06/30/fa-bu-zi-ji-de-githubshang-de-cocoapods-podku/" title="Previous Post: 发布自己的github上的cocoaPods pod库">&laquo; 发布自己的github上的cocoaPods pod库</a>
-      
-      
-        <a class="basic-alignment right" href="/blog/2015/09/02/%5B%3F%5D-ge-pod-updateyu-dao-de-cuo-wu-chu-li/" title="Next Post: 一个pod update遇到的错误处理">一个pod update遇到的错误处理 &raquo;</a>
-      
-    </p>
-  </footer>
-</article>
-
+    <a class="next" href="/index.html">Newer &rarr;</a>
+    
+  </div>
 </div>
-
 <aside class="sidebar">
   
     <section>
@@ -257,7 +213,6 @@ var jiathis_config={
 </section>
   
 </aside>
-
 
     </div>
   </div>

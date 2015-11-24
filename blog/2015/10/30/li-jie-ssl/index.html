@@ -132,7 +132,8 @@
 </ol>
 
 
-<p>用图来说明的话，如下：</p>
+<p>这里A,B都是不安全的，生成session key的方法是公开的，关键的key在于premaster secret，这个被认为最具有随机性的一个key，通过A+B+PremasterKey生成session key的公开算法，就得到了最后的秘钥了。
+用图来说明的话，如下：</p>
 
 <p><img src="http://7xk2xq.com1.z0.glb.clouddn.com/blogphotos/bg2014092004.png" alt="SSL Handshake" /></p>
 
@@ -304,6 +305,10 @@ var jiathis_config={
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/11/24/about-nsstring-size-calculate-methods/">关于字符串计算size的方法比较</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/11/10/runtime-programming-guide/">Runtime Programming Guide再次研究</a>
       </li>
     
@@ -317,10 +322,6 @@ var jiathis_config={
     
       <li class="post">
         <a href="/blog/2015/10/28/iosli-de-zhan-xian-zhi-yin-fa-de-crash/">iOS里的栈限制引发的crash</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/10/19/tong-guo-nsurlprotocollan-jie-httpzhuan-httpslai-zheng-he-spdyde-ji-lu/">通过NSURLProtocol拦截HTTP转HTTPS来整合SPDY的记录</a>
       </li>
     
   </ul>
@@ -365,7 +366,7 @@ var jiathis_config={
 <li class='category'><a href='/blog/categories/cocoapods/'>cocoapods (1)</a></li>
 <li class='category'><a href='/blog/categories/git/'>git (1)</a></li>
 <li class='category'><a href='/blog/categories/git-/'>git, (1)</a></li>
-<li class='category'><a href='/blog/categories/ios/'>ios (2)</a></li>
+<li class='category'><a href='/blog/categories/ios/'>ios (3)</a></li>
 <li class='category'><a href='/blog/categories/ios-/'>ios, (1)</a></li>
  
   </ul> 
